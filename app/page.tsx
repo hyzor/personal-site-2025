@@ -27,7 +27,11 @@ export default function Home() {
       >
         <div className={subtitle({ class: "mt-2" })}>Full-Stack Developer</div>
         <div className="mt-8 flex justify-center">
-          <Avatar className="w-64 h-64" src="/profile.jpg" />
+          <Avatar
+            alt="Jesper Falkenby - Full-Stack Developer"
+            className="w-64 h-64"
+            src="/profile.webp"
+          />
         </div>
       </Section>
       <Section headingLevel={2} id="resume" title="Résumé">

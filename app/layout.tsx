@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/profile.jpg",
+        url: "/profile.webp",
         width: 1200,
         height: 630,
         alt: `${siteConfig.name} - Full-Stack Developer`,
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: ["/profile.jpg"],
+    images: ["/profile.webp"],
     creator: "@jesperfalkenby",
   },
   robots: {
@@ -84,11 +84,20 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
+        <a
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md"
+          href="#main-content"
+        >
+          Skip to main content
+        </a>
         <AnimatedBackground />
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col z-10">
             <Navbar />
-            <main className="container mx-auto max-w-7xl px-6 flex-grow">
+            <main
+              className="container mx-auto max-w-7xl px-6 flex-grow"
+              id="main-content"
+            >
               {children}
             </main>
             <footer className="w-full flex items-center justify-center py-8">

@@ -1,17 +1,32 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
+  const animationRef = useRef<number | null>(null);
+  const isPausedRef = useRef(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setShouldAnimate(!mediaQuery.matches);
 
+    const handleChange = (e: MediaQueryListEvent) => {
+      setShouldAnimate(!e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
+
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return;
 
     const updateCanvasSize = () => {
@@ -26,7 +41,6 @@ export default function AnimatedBackground() {
 
       canvas.width = width;
       canvas.height = height;
-
       canvas.style.width = width + "px";
       canvas.style.height = height + "px";
     };
@@ -56,15 +70,13 @@ export default function AnimatedBackground() {
     }
 
     // Create multi-node connections
-
     for (let i = 0; i < maxConnections; i++) {
-      const pathLength = Math.floor(Math.random() * 3) + 2; // 2-4 nodes per path
+      const pathLength = Math.floor(Math.random() * 3) + 2;
       const path: number[] = [];
       let currentNode = Math.floor(Math.random() * nodes.length);
 
       for (let j = 0; j < pathLength; j++) {
         path.push(currentNode);
-        // Find nearest node that's not already in path
         let nearestNode = -1;
         let minDistance = Infinity;
 
@@ -97,13 +109,12 @@ export default function AnimatedBackground() {
 
     // Function to create new connections dynamically
     const createNewConnection = () => {
-      const pathLength = Math.floor(Math.random() * 3) + 2; // 2-4 nodes per path
+      const pathLength = Math.floor(Math.random() * 3) + 2;
       const path: number[] = [];
       let currentNode = Math.floor(Math.random() * nodes.length);
 
       for (let j = 0; j < pathLength; j++) {
         path.push(currentNode);
-        // Find nearest node that's not already in path
         let nearestNode = -1;
         let minDistance = Infinity;
 
@@ -135,6 +146,8 @@ export default function AnimatedBackground() {
     };
 
     const animate = () => {
+      if (isPausedRef.current) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update nodes
@@ -179,7 +192,6 @@ export default function AnimatedBackground() {
         conn.progress += conn.speed;
         if (conn.progress > 1) conn.progress = 0;
 
-        // Calculate position along the path
         const totalSegments = conn.path.length - 1;
         const currentSegment = Math.floor(conn.progress * totalSegments);
         const segmentProgress = (conn.progress * totalSegments) % 1;
@@ -187,8 +199,6 @@ export default function AnimatedBackground() {
         if (currentSegment < totalSegments) {
           const fromNode = nodes[conn.path[currentSegment]];
           const toNode = nodes[conn.path[currentSegment + 1]];
-
-          // Check distance between nodes before drawing
           const dx = toNode.x - fromNode.x;
           const dy = toNode.y - fromNode.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -245,28 +255,38 @@ export default function AnimatedBackground() {
         ctx.shadowBlur = 10;
       });
 
-      requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isPausedRef.current = true;
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+          animationRef.current = null;
+        }
+      } else {
+        isPausedRef.current = false;
+        if (!animationRef.current) {
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      }
+    };
+
+    // Start animation
+    animationRef.current = requestAnimationFrame(animate);
 
     let resizeTimeout: NodeJS.Timeout;
 
     const handleResize = () => {
-      // Clear previous timeout
       clearTimeout(resizeTimeout);
-
-      // Update canvas size immediately
       updateCanvasSize();
-
-      // Wait for user to stop resizing before redistributing nodes
       resizeTimeout = setTimeout(() => {
-        // Redistribute nodes evenly across new canvas size
         nodes.forEach((node) => {
           node.x = Math.random() * canvas.width;
           node.y = Math.random() * canvas.height;
         });
-      }, 100); // Wait 300ms after resize stops
+      }, 100);
     };
 
     const handleScroll = () => {
@@ -284,6 +304,7 @@ export default function AnimatedBackground() {
     window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("orientationchange", handleOrientationChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener(
@@ -296,6 +317,7 @@ export default function AnimatedBackground() {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("orientationchange", handleOrientationChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener(
           "resize",
@@ -303,8 +325,12 @@ export default function AnimatedBackground() {
         );
       }
       clearTimeout(resizeTimeout);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
     };
-  }, []);
+  }, [shouldAnimate]);
 
   return (
     <div className="fixed inset-0 z-0">
@@ -315,14 +341,16 @@ export default function AnimatedBackground() {
             "linear-gradient(135deg, #000000 0%, #0a0a1e 50%, #0a0a2e 100%)",
         }}
       />
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          width: "100vw",
-          height: "100vh",
-        }}
-      />
+      {shouldAnimate && (
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            width: "100vw",
+            height: "100vh",
+          }}
+        />
+      )}
     </div>
   );
 }

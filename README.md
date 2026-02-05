@@ -84,6 +84,8 @@ This website has been largely written by the model Big Pickle on OpenCode Zen. T
 - Code organization and best practices
 - TypeScript type definitions
 
+**2026-02-04 Update:** Critical accessibility and performance improvements were implemented using Kimi K2.5.
+
 Human oversight was maintained throughout the development process, with manual review, testing, and refinement of all generated code to ensure quality, functionality, and adherence to project requirements.
 
 ## Deployment

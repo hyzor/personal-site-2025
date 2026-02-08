@@ -195,17 +195,9 @@ export default function AnimatedBackground() {
 
       // Update nodes
       nodes.forEach((node) => {
-        // Apply velocity with damping
+        // Apply constant velocity (linear movement)
         node.x += node.vx;
         node.y += node.vy;
-
-        // Damping
-        node.vx *= 0.99;
-        node.vy *= 0.99;
-
-        // Minimum movement
-        if (Math.abs(node.vx) < 0.1) node.vx += (Math.random() - 0.5) * 0.1;
-        if (Math.abs(node.vy) < 0.1) node.vy += (Math.random() - 0.5) * 0.1;
 
         // Bounce off edges
         if (node.x < 0 || node.x > canvas.width) node.vx *= -1;

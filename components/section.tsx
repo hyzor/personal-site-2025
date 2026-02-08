@@ -2,8 +2,6 @@
 import { title } from "@/components/primitives";
 import { ScrollIndicator } from "@/components/scrollIndicator";
 
-import type { JSX } from "react";
-
 interface SectionProps {
   id: string;
   title: string;
@@ -21,7 +19,7 @@ export function Section({
   className,
   showScrollIndicator = false,
 }: SectionProps) {
-  const HeadingTag = `h${headingLevel}` as keyof JSX.IntrinsicElements;
+  const HeadingTag = `h${headingLevel}` as const;
 
   return (
     <section

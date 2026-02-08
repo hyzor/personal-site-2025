@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
-const SphereBackground = dynamic(
-  () => import("./sphereBackground"),
-  { ssr: false }
-);
+const SphereBackground = dynamic(() => import("./sphereBackground"), {
+  ssr: false,
+});
 
 interface Node {
   x: number;
@@ -157,7 +156,12 @@ export default function AnimatedBackground() {
         const nodeA = nodes[conn.from];
         const nodeB = nodes[conn.to];
 
-        const gradient = ctx.createLinearGradient(nodeA.x, nodeA.y, nodeB.x, nodeB.y);
+        const gradient = ctx.createLinearGradient(
+          nodeA.x,
+          nodeA.y,
+          nodeB.x,
+          nodeB.y,
+        );
         gradient.addColorStop(0, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
         gradient.addColorStop(0.5, `rgba(100, 200, 255, ${conn.opacity})`);
         gradient.addColorStop(1, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
@@ -174,8 +178,12 @@ export default function AnimatedBackground() {
       nodes.forEach((node) => {
         // Outer glow
         const glowGradient = ctx.createRadialGradient(
-          node.x, node.y, 0,
-          node.x, node.y, node.radius * 4
+          node.x,
+          node.y,
+          0,
+          node.x,
+          node.y,
+          node.radius * 4,
         );
         glowGradient.addColorStop(0, "rgba(0, 255, 255, 0.3)");
         glowGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
@@ -198,7 +206,7 @@ export default function AnimatedBackground() {
           node.y - node.radius * 0.3,
           node.radius * 0.4,
           0,
-          Math.PI * 2
+          Math.PI * 2,
         );
         ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
         ctx.fill();
@@ -206,7 +214,8 @@ export default function AnimatedBackground() {
 
       // Draw occasional traveling particles on connections
       if (Math.random() < 0.05 && connections.length > 0) {
-        const randomConn = connections[Math.floor(Math.random() * connections.length)];
+        const randomConn =
+          connections[Math.floor(Math.random() * connections.length)];
         const nodeA = nodes[randomConn.from];
         const nodeB = nodes[randomConn.to];
 

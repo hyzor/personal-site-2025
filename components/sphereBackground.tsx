@@ -84,11 +84,7 @@ function Sphere({ shouldAnimate }: SphereProps) {
       {/* Inner glow sphere */}
       <mesh>
         <sphereGeometry args={[2.9, 32, 32]} />
-        <meshBasicMaterial
-          color={0x004080}
-          transparent
-          opacity={0.02}
-        />
+        <meshBasicMaterial color={0x004080} transparent opacity={0.02} />
       </mesh>
 
       {/* Particle points on sphere surface */}
@@ -122,7 +118,9 @@ interface SphereBackgroundProps {
   shouldAnimate: boolean;
 }
 
-export default function SphereBackground({ shouldAnimate }: SphereBackgroundProps) {
+export default function SphereBackground({
+  shouldAnimate,
+}: SphereBackgroundProps) {
   return (
     <div className="absolute inset-0">
       <Canvas

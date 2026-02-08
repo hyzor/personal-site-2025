@@ -101,7 +101,7 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="w-full flex items-center justify-center py-8">
-              © 2025 Jesper Falkenby
+              © 2026 Jesper Falkenby
             </footer>
           </div>
         </Providers>

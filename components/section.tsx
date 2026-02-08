@@ -26,7 +26,7 @@ export function Section({
       className={`flex flex-col items-center justify-center gap-4 py-20 md:py-20 min-h-screen relative ${className || ""}`}
       id={id}
     >
-      <div className="inline-block max-w-7xl text-center px-6 py-8 rounded-2xl bg-slate-950/20 backdrop-blur-sm">
+      <div className="inline-block max-w-5xl text-center px-6 py-8 rounded-2xl bg-slate-950/20 backdrop-blur-sm">
         <HeadingTag className={title()}>{sectionTitle}</HeadingTag>
         {children}
       </div>

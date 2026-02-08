@@ -21,6 +21,13 @@ interface Connection {
   opacity: number;
 }
 
+interface TravelingParticle {
+  fromNode: number;
+  toNode: number;
+  progress: number;
+  speed: number;
+}
+
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shouldAnimate, setShouldAnimate] = useState(true);
@@ -81,6 +88,9 @@ export default function AnimatedBackground() {
         radius: Math.random() * 2 + 1.5,
       });
     }
+
+    // Track traveling particles on connections
+    const travelingParticles: TravelingParticle[] = [];
 
     // Static render function for reduced motion
     const renderStatic = () => {
@@ -306,20 +316,38 @@ export default function AnimatedBackground() {
         ctx.fill();
       });
 
-      // Draw occasional traveling particles on connections
-      if (Math.random() < 0.05 && connections.length > 0) {
+      // Spawn new traveling particles occasionally
+      if (Math.random() < 0.02 && connections.length > 0) {
         const randomConn =
           connections[Math.floor(Math.random() * connections.length)];
-        const nodeA = nodes[randomConn.from];
-        const nodeB = nodes[randomConn.to];
+        travelingParticles.push({
+          fromNode: randomConn.from,
+          toNode: randomConn.to,
+          progress: 0,
+          speed: 0.005 + Math.random() * 0.0025, // Slow speed: 0.5% to 1% per frame
+        });
+      }
 
-        const progress = Math.random();
-        const x = nodeA.x + (nodeB.x - nodeA.x) * progress;
-        const y = nodeA.y + (nodeB.y - nodeA.y) * progress;
+      // Update and draw traveling particles
+      for (let i = travelingParticles.length - 1; i >= 0; i--) {
+        const particle = travelingParticles[i];
+        particle.progress += particle.speed;
+
+        // Remove particle if it reached the end
+        if (particle.progress >= 1) {
+          travelingParticles.splice(i, 1);
+          continue;
+        }
+
+        // Draw particle at current position
+        const nodeA = nodes[particle.fromNode];
+        const nodeB = nodes[particle.toNode];
+        const x = nodeA.x + (nodeB.x - nodeA.x) * particle.progress;
+        const y = nodeA.y + (nodeB.y - nodeA.y) * particle.progress;
 
         ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
         ctx.fill();
       }
 

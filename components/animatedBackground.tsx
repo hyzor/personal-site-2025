@@ -40,8 +40,6 @@ export default function AnimatedBackground() {
   }, []);
 
   useEffect(() => {
-    if (!shouldAnimate) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -82,6 +80,110 @@ export default function AnimatedBackground() {
         vy: (Math.random() - 0.5) * 0.8,
         radius: Math.random() * 2 + 1.5,
       });
+    }
+
+    // Static render function for reduced motion
+    const renderStatic = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Build connections based on proximity
+      const connections: Connection[] = [];
+
+      for (let i = 0; i < nodes.length; i++) {
+        const nodeA = nodes[i];
+        const nearbyNodes: { index: number; distance: number }[] = [];
+
+        for (let j = i + 1; j < nodes.length; j++) {
+          const nodeB = nodes[j];
+          const dx = nodeB.x - nodeA.x;
+          const dy = nodeB.y - nodeA.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < connectionDistance) {
+            nearbyNodes.push({ index: j, distance });
+          }
+        }
+
+        nearbyNodes.sort((a, b) => a.distance - b.distance);
+        const connectionsToMake = Math.min(
+          maxConnectionsPerNode,
+          nearbyNodes.length,
+        );
+
+        for (let k = 0; k < connectionsToMake; k++) {
+          const dist = nearbyNodes[k].distance;
+          const opacity = 1 - dist / connectionDistance;
+          connections.push({
+            from: i,
+            to: nearbyNodes[k].index,
+            opacity: opacity * 0.6,
+          });
+        }
+      }
+
+      // Draw connections
+      connections.forEach((conn) => {
+        const nodeA = nodes[conn.from];
+        const nodeB = nodes[conn.to];
+
+        const gradient = ctx.createLinearGradient(
+          nodeA.x,
+          nodeA.y,
+          nodeB.x,
+          nodeB.y,
+        );
+        gradient.addColorStop(0, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
+        gradient.addColorStop(0.5, `rgba(100, 200, 255, ${conn.opacity})`);
+        gradient.addColorStop(1, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
+
+        ctx.beginPath();
+        ctx.moveTo(nodeA.x, nodeA.y);
+        ctx.lineTo(nodeB.x, nodeB.y);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // Draw nodes
+      nodes.forEach((node) => {
+        const glowGradient = ctx.createRadialGradient(
+          node.x,
+          node.y,
+          0,
+          node.x,
+          node.y,
+          node.radius * 4,
+        );
+        glowGradient.addColorStop(0, "rgba(0, 255, 255, 0.3)");
+        glowGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
+        ctx.fillStyle = glowGradient;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.9)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(
+          node.x - node.radius * 0.3,
+          node.y - node.radius * 0.3,
+          node.radius * 0.4,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.fill();
+      });
+    };
+
+    // If reduced motion is preferred, render static version only
+    if (!shouldAnimate) {
+      renderStatic();
+      return;
     }
 
     // Mouse interaction disabled
@@ -317,22 +419,18 @@ export default function AnimatedBackground() {
         }}
       />
       {/* Particle network - rendered behind sphere */}
-      {shouldAnimate && (
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            width: "100vw",
-            height: "100vh",
-          }}
-        />
-      )}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          width: "100vw",
+          height: "100vh",
+        }}
+      />
       {/* 3D Sphere Background - rendered on top of particles */}
-      {shouldAnimate && (
-        <div className="absolute inset-0 pointer-events-none">
-          <SphereBackground shouldAnimate={shouldAnimate} />
-        </div>
-      )}
+      <div className="absolute inset-0 pointer-events-none">
+        <SphereBackground shouldAnimate={shouldAnimate} />
+      </div>
     </div>
   );
 }

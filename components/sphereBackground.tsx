@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -94,6 +94,29 @@ function Sphere({ shouldAnimate }: SphereProps) {
       pointsRef.current.rotation.x += delta * 0.05;
     }
   });
+
+  // Set initial rotation for static display when reduced motion is preferred
+  useEffect(() => {
+    if (!shouldAnimate) {
+      const initialY = Math.PI / 4;
+      const initialX = Math.PI / 8;
+
+      if (meshRef.current) {
+        meshRef.current.rotation.y = initialY;
+        meshRef.current.rotation.x = initialX;
+      }
+
+      if (wireframeRef.current) {
+        wireframeRef.current.rotation.y = initialY;
+        wireframeRef.current.rotation.x = initialX;
+      }
+
+      if (pointsRef.current) {
+        pointsRef.current.rotation.y = initialY;
+        pointsRef.current.rotation.x = initialX;
+      }
+    }
+  }, [shouldAnimate]);
 
   return (
     <>

@@ -149,7 +149,7 @@ export const Navbar = () => {
 
         <NavbarMenu>
           <div className="mx-4 mt-2 flex flex-col gap-2">
-            {siteConfig.navMenuItems.map((item, index) => {
+            {siteConfig.navItems.map((item, index) => {
               const targetId = item.href.replace("#", "");
               const isActive = activeSection === targetId;
 

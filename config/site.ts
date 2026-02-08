@@ -21,48 +21,11 @@ export const siteConfig = {
     "mobile development",
   ],
   navItems: [
-    {
-      label: "Home",
-      href: "#home",
-    },
-    {
-      label: "Résumé",
-      href: "#resume",
-    },
-    {
-      label: "Publications",
-      href: "#publications",
-    },
-    {
-      label: "About",
-      href: "#about",
-    },
-    {
-      label: "Contact",
-      href: "#contact",
-    },
-  ],
-  navMenuItems: [
-    {
-      label: "Home",
-      href: "#home",
-    },
-    {
-      label: "Résumé",
-      href: "#resume",
-    },
-    {
-      label: "Publications",
-      href: "#publications",
-    },
-    {
-      label: "About",
-      href: "#about",
-    },
-    {
-      label: "Contact",
-      href: "#contact",
-    },
+    { label: "Home", href: "#home" },
+    { label: "Résumé", href: "#resume" },
+    { label: "Publications", href: "#publications" },
+    { label: "About", href: "#about" },
+    { label: "Contact", href: "#contact" },
   ],
   links: {
     linkedin: "https://linkedin.com/in/jesperfalkenby",

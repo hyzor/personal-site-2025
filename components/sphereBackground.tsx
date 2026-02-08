@@ -10,11 +10,42 @@ interface SphereProps {
 
 function Sphere({ shouldAnimate }: SphereProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const wireframeRef = useRef<THREE.Mesh>(null);
   const pointsRef = useRef<THREE.Points>(null);
 
-  // Create sphere geometry with points on surface
+  // Create sphere geometry with points at wireframe vertices (triangle intersections)
   const { positions, colors } = useMemo(() => {
-    const particleCount = 2000;
+    // Sphere parameters matching the wireframe sphere
+    const radius = 3;
+    const widthSegments = 32;
+    const heightSegments = 32;
+
+    // Calculate all unique vertex positions from the sphere geometry
+    const vertexSet = new Set<string>();
+    const vertices: THREE.Vector3[] = [];
+
+    for (let y = 0; y <= heightSegments; y++) {
+      for (let x = 0; x <= widthSegments; x++) {
+        const u = x / widthSegments;
+        const v = y / heightSegments;
+
+        const theta = u * Math.PI * 2;
+        const phi = v * Math.PI;
+
+        const px = -radius * Math.cos(theta) * Math.sin(phi);
+        const py = radius * Math.cos(phi);
+        const pz = radius * Math.sin(theta) * Math.sin(phi);
+
+        const key = `${px.toFixed(4)},${py.toFixed(4)},${pz.toFixed(4)}`;
+
+        if (!vertexSet.has(key)) {
+          vertexSet.add(key);
+          vertices.push(new THREE.Vector3(px, py, pz));
+        }
+      }
+    }
+
+    const particleCount = vertices.length;
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
@@ -22,22 +53,13 @@ function Sphere({ shouldAnimate }: SphereProps) {
     const color2 = new THREE.Color(0x0080ff); // Blue
     const color3 = new THREE.Color(0x4d00ff); // Purple
 
-    for (let i = 0; i < particleCount; i++) {
-      // Fibonacci sphere algorithm for even distribution
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / particleCount);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
-
-      const radius = 3;
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.sin(phi) * Math.sin(theta);
-      const z = radius * Math.cos(phi);
-
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
+    vertices.forEach((vertex, i) => {
+      positions[i * 3] = vertex.x;
+      positions[i * 3 + 1] = vertex.y;
+      positions[i * 3 + 2] = vertex.z;
 
       // Gradient colors based on position
-      const mixRatio = (y + radius) / (radius * 2);
+      const mixRatio = (vertex.y + radius) / (radius * 2);
       const mixedColor = new THREE.Color();
 
       if (mixRatio < 0.5) {
@@ -49,7 +71,7 @@ function Sphere({ shouldAnimate }: SphereProps) {
       colors[i * 3] = mixedColor.r;
       colors[i * 3 + 1] = mixedColor.g;
       colors[i * 3 + 2] = mixedColor.b;
-    }
+    });
 
     return { positions, colors };
   }, []);
@@ -62,6 +84,11 @@ function Sphere({ shouldAnimate }: SphereProps) {
       meshRef.current.rotation.x += delta * 0.05;
     }
 
+    if (wireframeRef.current) {
+      wireframeRef.current.rotation.y += delta * 0.1;
+      wireframeRef.current.rotation.x += delta * 0.05;
+    }
+
     if (pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.1;
       pointsRef.current.rotation.x += delta * 0.05;
@@ -70,21 +97,29 @@ function Sphere({ shouldAnimate }: SphereProps) {
 
   return (
     <>
-      {/* Wireframe sphere */}
-      <mesh ref={meshRef}>
+      {/* Solid sphere with depth testing - dark navy blue */}
+      <mesh ref={meshRef} renderOrder={1}>
         <sphereGeometry args={[3, 32, 32]} />
         <meshBasicMaterial
-          color={0x0080ff}
-          transparent
-          opacity={0.05}
-          wireframe
+          color={0x0a1628}
+          transparent={false}
+          opacity={1}
+          depthWrite={true}
+          depthTest={true}
         />
       </mesh>
 
-      {/* Inner glow sphere */}
-      <mesh>
-        <sphereGeometry args={[2.9, 32, 32]} />
-        <meshBasicMaterial color={0x004080} transparent opacity={0.02} />
+      {/* Wireframe sphere overlay */}
+      <mesh ref={wireframeRef} renderOrder={2}>
+        <sphereGeometry args={[3.01, 32, 32]} />
+        <meshBasicMaterial
+          color={0x0080ff}
+          transparent
+          opacity={0.3}
+          wireframe
+          depthWrite={false}
+          depthTest={true}
+        />
       </mesh>
 
       {/* Particle points on sphere surface */}
@@ -96,11 +131,13 @@ function Sphere({ shouldAnimate }: SphereProps) {
           }}
         />
         <pointsMaterial
-          size={0.03}
+          size={0.05}
           vertexColors
           transparent
-          opacity={0.8}
+          opacity={1}
           sizeAttenuation
+          depthWrite={false}
+          depthTest={true}
         />
       </points>
 
@@ -130,6 +167,7 @@ export default function SphereBackground({
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
+          depth: true,
         }}
       >
         <Sphere shouldAnimate={shouldAnimate} />

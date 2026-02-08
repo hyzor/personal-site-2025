@@ -376,10 +376,14 @@ export default function AnimatedBackground() {
         style={{
           width: "100vw",
           height: "100vh",
+          zIndex: 0,
         }}
       />
       {/* 3D Sphere Background - rendered on top of particles */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 10 }}
+      >
         <SphereBackground shouldAnimate={shouldAnimate} />
       </div>
     </div>

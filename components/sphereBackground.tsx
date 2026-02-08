@@ -6,10 +6,12 @@ import * as THREE from "three";
 
 interface SphereProps {
   shouldAnimate: boolean;
+  scrollOffset: number;
 }
 
-function Sphere({ shouldAnimate }: SphereProps) {
+function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
   const wireframeRef = useRef<THREE.Mesh>(null);
+  const targetY = useRef(0.6);
 
   useFrame((state, delta) => {
     if (!shouldAnimate) return;
@@ -17,6 +19,12 @@ function Sphere({ shouldAnimate }: SphereProps) {
     if (wireframeRef.current) {
       wireframeRef.current.rotation.y += delta * 0.1;
       wireframeRef.current.rotation.x += delta * 0.05;
+
+      // Smooth parallax movement
+      const parallaxY = 0.6 - scrollOffset * 0.0003;
+      targetY.current = parallaxY;
+      wireframeRef.current.position.y +=
+        (targetY.current - wireframeRef.current.position.y) * 0.1;
     }
   });
 
@@ -31,7 +39,7 @@ function Sphere({ shouldAnimate }: SphereProps) {
   return (
     <>
       {/* Wireframe sphere only - removed solid mesh and particles for performance */}
-      <mesh ref={wireframeRef} renderOrder={1} position={[0, 0.25, 0]}>
+      <mesh ref={wireframeRef} renderOrder={1} position={[0, 0.6, 0]}>
         <sphereGeometry args={[2.5, 32, 32]} />
         <meshBasicMaterial
           color={0x0080ff}
@@ -60,6 +68,7 @@ export default function SphereBackground({
   shouldAnimate,
 }: SphereBackgroundProps) {
   const [dpr, setDpr] = useState(1);
+  const [scrollOffset, setScrollOffset] = useState(0);
 
   useEffect(() => {
     const updateDpr = () => {
@@ -77,9 +86,18 @@ export default function SphereBackground({
       }
     };
 
+    const handleScroll = () => {
+      setScrollOffset(window.scrollY);
+    };
+
     updateDpr();
     window.addEventListener("resize", updateDpr);
-    return () => window.removeEventListener("resize", updateDpr);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", updateDpr);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   return (
@@ -95,7 +113,7 @@ export default function SphereBackground({
           depth: true,
         }}
       >
-        <Sphere shouldAnimate={shouldAnimate} />
+        <Sphere shouldAnimate={shouldAnimate} scrollOffset={scrollOffset} />
       </Canvas>
     </div>
   );

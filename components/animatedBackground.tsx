@@ -1,6 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+
+const SphereBackground = dynamic(
+  () => import("./sphereBackground"),
+  { ssr: false }
+);
+
+interface Node {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+}
+
+interface Connection {
+  from: number;
+  to: number;
+  opacity: number;
+}
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,103 +67,25 @@ export default function AnimatedBackground() {
 
     updateCanvasSize();
 
-    const maxConnectionDistance = 350;
-    const numNodes = 40;
-    const maxConnections = 20;
+    // Configuration for web-like network
+    const connectionDistance = 180;
+    const numNodes = 80;
+    const maxConnectionsPerNode = 5;
 
-    const nodes: { x: number; y: number; vx: number; vy: number }[] = [];
-    const connections: {
-      path: number[];
-      progress: number;
-      speed: number;
-      color: string;
-    }[] = [];
+    const nodes: Node[] = [];
 
-    // Create nodes
+    // Create nodes with varied sizes
     for (let i = 0; i < numNodes; i++) {
       nodes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
+        radius: Math.random() * 2 + 1.5,
       });
     }
 
-    // Create multi-node connections
-    for (let i = 0; i < maxConnections; i++) {
-      const pathLength = Math.floor(Math.random() * 3) + 2;
-      const path: number[] = [];
-      let currentNode = Math.floor(Math.random() * nodes.length);
-
-      for (let j = 0; j < pathLength; j++) {
-        path.push(currentNode);
-        let nearestNode = -1;
-        let minDistance = Infinity;
-
-        for (let k = 0; k < nodes.length; k++) {
-          if (!path.includes(k)) {
-            const dx = nodes[k].x - nodes[currentNode].x;
-            const dy = nodes[k].y - nodes[currentNode].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < minDistance && distance < maxConnectionDistance) {
-              minDistance = distance;
-              nearestNode = k;
-            }
-          }
-        }
-
-        if (nearestNode === -1) break;
-        currentNode = nearestNode;
-      }
-
-      if (path.length > 1) {
-        connections.push({
-          path,
-          progress: 0,
-          speed: 0.001 + Math.random() * 0.002,
-          color: "rgba(100, 200, 255, ",
-        });
-      }
-    }
-
-    // Function to create new connections dynamically
-    const createNewConnection = () => {
-      const pathLength = Math.floor(Math.random() * 3) + 2;
-      const path: number[] = [];
-      let currentNode = Math.floor(Math.random() * nodes.length);
-
-      for (let j = 0; j < pathLength; j++) {
-        path.push(currentNode);
-        let nearestNode = -1;
-        let minDistance = Infinity;
-
-        for (let k = 0; k < nodes.length; k++) {
-          if (!path.includes(k)) {
-            const dx = nodes[k].x - nodes[currentNode].x;
-            const dy = nodes[k].y - nodes[currentNode].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < minDistance && distance < maxConnectionDistance) {
-              minDistance = distance;
-              nearestNode = k;
-            }
-          }
-        }
-
-        if (nearestNode === -1) break;
-        currentNode = nearestNode;
-      }
-
-      if (path.length > 1) {
-        connections.push({
-          path,
-          progress: 0,
-          speed: 0.001 + Math.random() * 0.002,
-          color: "rgba(100, 200, 255, ",
-        });
-      }
-    };
+    // Mouse interaction disabled
 
     const animate = () => {
       if (isPausedRef.current) return;
@@ -152,108 +94,131 @@ export default function AnimatedBackground() {
 
       // Update nodes
       nodes.forEach((node) => {
+        // Apply velocity with damping
         node.x += node.vx;
         node.y += node.vy;
 
+        // Damping
+        node.vx *= 0.99;
+        node.vy *= 0.99;
+
+        // Minimum movement
+        if (Math.abs(node.vx) < 0.1) node.vx += (Math.random() - 0.5) * 0.1;
+        if (Math.abs(node.vy) < 0.1) node.vy += (Math.random() - 0.5) * 0.1;
+
+        // Bounce off edges
         if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
         if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+
+        // Keep within bounds
+        node.x = Math.max(0, Math.min(canvas.width, node.x));
+        node.y = Math.max(0, Math.min(canvas.height, node.y));
       });
 
-      // Remove connections that have nodes too far apart
-      for (let i = connections.length - 1; i >= 0; i--) {
-        const conn = connections[i];
-        let shouldRemove = false;
+      // Build dynamic connections based on proximity
+      const connections: Connection[] = [];
 
-        for (let j = 0; j < conn.path.length - 1; j++) {
-          const nodeA = nodes[conn.path[j]];
-          const nodeB = nodes[conn.path[j + 1]];
+      for (let i = 0; i < nodes.length; i++) {
+        const nodeA = nodes[i];
+        const nearbyNodes: { index: number; distance: number }[] = [];
+
+        // Find all nearby nodes
+        for (let j = i + 1; j < nodes.length; j++) {
+          const nodeB = nodes[j];
           const dx = nodeB.x - nodeA.x;
           const dy = nodeB.y - nodeA.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance > maxConnectionDistance) {
-            shouldRemove = true;
-            break;
+          if (distance < connectionDistance) {
+            nearbyNodes.push({ index: j, distance });
           }
         }
 
-        if (shouldRemove) {
-          connections.splice(i, 1);
+        // Sort by distance and take closest ones
+        nearbyNodes.sort((a, b) => a.distance - b.distance);
+        const connectionsToMake = Math.min(
+          maxConnectionsPerNode,
+          nearbyNodes.length,
+        );
+
+        for (let k = 0; k < connectionsToMake; k++) {
+          const dist = nearbyNodes[k].distance;
+          const opacity = 1 - dist / connectionDistance;
+          connections.push({
+            from: i,
+            to: nearbyNodes[k].index,
+            opacity: opacity * 0.6,
+          });
         }
       }
 
-      // Dynamically create new connections to maintain count
-      if (connections.length < maxConnections && Math.random() < 0.02) {
-        createNewConnection();
-      }
-
-      // Draw multi-node connections
+      // Draw connections with gradient
       connections.forEach((conn) => {
-        conn.progress += conn.speed;
-        if (conn.progress > 1) conn.progress = 0;
+        const nodeA = nodes[conn.from];
+        const nodeB = nodes[conn.to];
 
-        const totalSegments = conn.path.length - 1;
-        const currentSegment = Math.floor(conn.progress * totalSegments);
-        const segmentProgress = (conn.progress * totalSegments) % 1;
+        const gradient = ctx.createLinearGradient(nodeA.x, nodeA.y, nodeB.x, nodeB.y);
+        gradient.addColorStop(0, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
+        gradient.addColorStop(0.5, `rgba(100, 200, 255, ${conn.opacity})`);
+        gradient.addColorStop(1, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
 
-        if (currentSegment < totalSegments) {
-          const fromNode = nodes[conn.path[currentSegment]];
-          const toNode = nodes[conn.path[currentSegment + 1]];
-          const dx = toNode.x - fromNode.x;
-          const dy = toNode.y - fromNode.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          const maxDistance = maxConnectionDistance;
-
-          if (distance < maxDistance) {
-            const x = fromNode.x + (toNode.x - fromNode.x) * segmentProgress;
-            const y = fromNode.y + (toNode.y - fromNode.y) * segmentProgress;
-
-            // Draw traveling particle
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fillStyle = conn.color + (1 - conn.progress) + ")";
-            ctx.fill();
-            ctx.shadowColor = conn.color + "1)";
-            ctx.shadowBlur = 10;
-
-            // Draw trail behind particle
-            ctx.beginPath();
-            ctx.moveTo(fromNode.x, fromNode.y);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = conn.color + 0.3 * (1 - conn.progress) + ")";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-          }
-
-          // Draw faint connection lines between all nodes in path
-          for (let i = 0; i < conn.path.length - 1; i++) {
-            const nodeA = nodes[conn.path[i]];
-            const nodeB = nodes[conn.path[i + 1]];
-            const dx = nodeB.x - nodeA.x;
-            const dy = nodeB.y - nodeA.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < maxDistance) {
-              ctx.beginPath();
-              ctx.moveTo(nodeA.x, nodeA.y);
-              ctx.lineTo(nodeB.x, nodeB.y);
-              ctx.strokeStyle = conn.color + "0.1)";
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-        }
-      });
-
-      // Draw nodes
-      nodes.forEach((node) => {
         ctx.beginPath();
-        ctx.arc(node.x, node.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
-        ctx.fill();
-        ctx.shadowColor = "cyan";
-        ctx.shadowBlur = 10;
+        ctx.moveTo(nodeA.x, nodeA.y);
+        ctx.lineTo(nodeB.x, nodeB.y);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1;
+        ctx.stroke();
       });
+
+      // Draw nodes with glow
+      nodes.forEach((node) => {
+        // Outer glow
+        const glowGradient = ctx.createRadialGradient(
+          node.x, node.y, 0,
+          node.x, node.y, node.radius * 4
+        );
+        glowGradient.addColorStop(0, "rgba(0, 255, 255, 0.3)");
+        glowGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
+        ctx.fillStyle = glowGradient;
+        ctx.fill();
+
+        // Core
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.9)";
+        ctx.fill();
+
+        // Highlight
+        ctx.beginPath();
+        ctx.arc(
+          node.x - node.radius * 0.3,
+          node.y - node.radius * 0.3,
+          node.radius * 0.4,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.fill();
+      });
+
+      // Draw occasional traveling particles on connections
+      if (Math.random() < 0.05 && connections.length > 0) {
+        const randomConn = connections[Math.floor(Math.random() * connections.length)];
+        const nodeA = nodes[randomConn.from];
+        const nodeB = nodes[randomConn.to];
+
+        const progress = Math.random();
+        const x = nodeA.x + (nodeB.x - nodeA.x) * progress;
+        const y = nodeA.y + (nodeB.y - nodeA.y) * progress;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fill();
+      }
 
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -317,6 +282,7 @@ export default function AnimatedBackground() {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("orientationchange", handleOrientationChange);
+
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener(
@@ -341,6 +307,7 @@ export default function AnimatedBackground() {
             "linear-gradient(135deg, #000000 0%, #0a0a1e 50%, #0a0a2e 100%)",
         }}
       />
+      {/* Particle network - rendered behind sphere */}
       {shouldAnimate && (
         <canvas
           ref={canvasRef}
@@ -350,6 +317,12 @@ export default function AnimatedBackground() {
             height: "100vh",
           }}
         />
+      )}
+      {/* 3D Sphere Background - rendered on top of particles */}
+      {shouldAnimate && (
+        <div className="absolute inset-0 pointer-events-none">
+          <SphereBackground shouldAnimate={shouldAnimate} />
+        </div>
       )}
     </div>
   );

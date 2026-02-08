@@ -20,7 +20,9 @@
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.28",
     "@react-pdf/renderer": "^4.3.1",
+    "@react-three/fiber": "^9.5.0",
     "@types/react-pdf": "^7.0.0",
+    "@types/three": "^0.182.0",
     "clsx": "^2.1.1",
     "framer-motion": "11.18.2",
     "intl-messageformat": "10.7.16",
@@ -28,7 +30,8 @@
     "next-themes": "0.4.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-pdf": "^10.2.0"
+    "react-pdf": "^10.2.0",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.4.1",

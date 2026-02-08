@@ -71,10 +71,10 @@ export default function AnimatedBackground() {
 
     updateCanvasSize();
 
-    // Configuration for web-like network
-    const connectionDistance = 180;
-    const numNodes = 80;
-    const maxConnectionsPerNode = 5;
+    // Configuration for web-like network - reduced for 4K performance
+    const connectionDistance = 120;
+    const numNodes = 30;
+    const maxConnectionsPerNode = 3;
 
     const nodes: Node[] = [];
 
@@ -131,61 +131,32 @@ export default function AnimatedBackground() {
         }
       }
 
-      // Draw connections
+      // Draw connections - simplified
       connections.forEach((conn) => {
         const nodeA = nodes[conn.from];
         const nodeB = nodes[conn.to];
 
-        const gradient = ctx.createLinearGradient(
-          nodeA.x,
-          nodeA.y,
-          nodeB.x,
-          nodeB.y,
-        );
-        gradient.addColorStop(0, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
-        gradient.addColorStop(0.5, `rgba(100, 200, 255, ${conn.opacity})`);
-        gradient.addColorStop(1, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
-
         ctx.beginPath();
         ctx.moveTo(nodeA.x, nodeA.y);
         ctx.lineTo(nodeB.x, nodeB.y);
-        ctx.strokeStyle = gradient;
+        ctx.strokeStyle = `rgba(0, 200, 255, ${conn.opacity * 0.5})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Draw nodes
+      // Draw nodes - simplified
       nodes.forEach((node) => {
-        const glowGradient = ctx.createRadialGradient(
-          node.x,
-          node.y,
-          0,
-          node.x,
-          node.y,
-          node.radius * 4,
-        );
-        glowGradient.addColorStop(0, "rgba(0, 255, 255, 0.3)");
-        glowGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
-
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
-        ctx.fillStyle = glowGradient;
-        ctx.fill();
-
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.9)";
+        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
         ctx.fill();
+      });
 
+      // Draw nodes - simplified for performance
+      nodes.forEach((node) => {
         ctx.beginPath();
-        ctx.arc(
-          node.x - node.radius * 0.3,
-          node.y - node.radius * 0.3,
-          node.radius * 0.4,
-          0,
-          Math.PI * 2,
-        );
-        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
         ctx.fill();
       });
     };
@@ -255,69 +226,29 @@ export default function AnimatedBackground() {
         }
       }
 
-      // Draw connections with gradient
+      // Draw connections - simplified, no gradients
       connections.forEach((conn) => {
         const nodeA = nodes[conn.from];
         const nodeB = nodes[conn.to];
 
-        const gradient = ctx.createLinearGradient(
-          nodeA.x,
-          nodeA.y,
-          nodeB.x,
-          nodeB.y,
-        );
-        gradient.addColorStop(0, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
-        gradient.addColorStop(0.5, `rgba(100, 200, 255, ${conn.opacity})`);
-        gradient.addColorStop(1, `rgba(0, 255, 255, ${conn.opacity * 0.5})`);
-
         ctx.beginPath();
         ctx.moveTo(nodeA.x, nodeA.y);
         ctx.lineTo(nodeB.x, nodeB.y);
-        ctx.strokeStyle = gradient;
+        ctx.strokeStyle = `rgba(0, 200, 255, ${conn.opacity * 0.5})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Draw nodes with glow
+      // Draw nodes - simplified for performance
       nodes.forEach((node) => {
-        // Outer glow
-        const glowGradient = ctx.createRadialGradient(
-          node.x,
-          node.y,
-          0,
-          node.x,
-          node.y,
-          node.radius * 4,
-        );
-        glowGradient.addColorStop(0, "rgba(0, 255, 255, 0.3)");
-        glowGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
-
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius * 4, 0, Math.PI * 2);
-        ctx.fillStyle = glowGradient;
-        ctx.fill();
-
-        // Core
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.9)";
-        ctx.fill();
-
-        // Highlight
-        ctx.beginPath();
-        ctx.arc(
-          node.x - node.radius * 0.3,
-          node.y - node.radius * 0.3,
-          node.radius * 0.4,
-          0,
-          Math.PI * 2,
-        );
-        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
         ctx.fill();
       });
 
-      // Spawn new traveling particles occasionally
-      if (Math.random() < 0.02 && connections.length > 0) {
+      // Spawn new traveling particles occasionally - reduced spawn rate
+      if (Math.random() < 0.005 && connections.length > 0) {
         const randomConn =
           connections[Math.floor(Math.random() * connections.length)];
         travelingParticles.push({

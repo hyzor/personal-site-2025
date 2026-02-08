@@ -4,6 +4,9 @@ import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+// Configurable sphere starting position
+const SPHERE_INITIAL_Y = 0.85;
+
 interface SphereProps {
   shouldAnimate: boolean;
   scrollOffset: number;
@@ -11,7 +14,7 @@ interface SphereProps {
 
 function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
   const wireframeRef = useRef<THREE.Mesh>(null);
-  const targetY = useRef(0.6);
+  const targetY = useRef(SPHERE_INITIAL_Y);
 
   useFrame((state, delta) => {
     if (!shouldAnimate) return;
@@ -21,7 +24,7 @@ function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
       wireframeRef.current.rotation.x += delta * 0.05;
 
       // Smooth parallax movement
-      const parallaxY = 0.6 - scrollOffset * 0.0003;
+      const parallaxY = SPHERE_INITIAL_Y - scrollOffset * 0.0003;
       targetY.current = parallaxY;
       wireframeRef.current.position.y +=
         (targetY.current - wireframeRef.current.position.y) * 0.1;
@@ -39,7 +42,11 @@ function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
   return (
     <>
       {/* Wireframe sphere only - removed solid mesh and particles for performance */}
-      <mesh ref={wireframeRef} renderOrder={1} position={[0, 0.6, 0]}>
+      <mesh
+        ref={wireframeRef}
+        renderOrder={1}
+        position={[0, SPHERE_INITIAL_Y, 0]}
+      >
         <sphereGeometry args={[2.5, 32, 32]} />
         <meshBasicMaterial
           color={0x0080ff}

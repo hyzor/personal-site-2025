@@ -255,7 +255,7 @@ export default function AnimatedBackground() {
           fromNode: randomConn.from,
           toNode: randomConn.to,
           progress: 0,
-          speed: 0.005 + Math.random() * 0.0025, // Slow speed: 0.5% to 1% per frame
+          speed: 0.015 + Math.random() * 0.015, // Slow speed: 1.5% to 3% per frame
         });
       }
 

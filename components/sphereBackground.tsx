@@ -31,8 +31,8 @@ function Sphere({ shouldAnimate }: SphereProps) {
   return (
     <>
       {/* Wireframe sphere only - removed solid mesh and particles for performance */}
-      <mesh ref={wireframeRef} renderOrder={1}>
-        <sphereGeometry args={[3, 16, 16]} />
+      <mesh ref={wireframeRef} renderOrder={1} position={[0, 0.25, 0]}>
+        <sphereGeometry args={[2.5, 32, 32]} />
         <meshBasicMaterial
           color={0x0080ff}
           transparent

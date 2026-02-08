@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 // Configurable sphere starting position
-const SPHERE_INITIAL_Y = 0.85;
+const SPHERE_INITIAL_Y = 0.65;
 
 interface SphereProps {
   shouldAnimate: boolean;

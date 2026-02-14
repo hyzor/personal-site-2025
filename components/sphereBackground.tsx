@@ -8,17 +8,14 @@ import * as THREE from "three";
 const SPHERE_INITIAL_Y = 0.65;
 
 interface SphereProps {
-  shouldAnimate: boolean;
   scrollOffset: number;
 }
 
-function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
+function Sphere({ scrollOffset }: SphereProps) {
   const wireframeRef = useRef<THREE.Mesh>(null);
   const targetY = useRef(SPHERE_INITIAL_Y);
 
   useFrame((state, delta) => {
-    if (!shouldAnimate) return;
-
     if (wireframeRef.current) {
       wireframeRef.current.rotation.y += delta * 0.1;
       wireframeRef.current.rotation.x += delta * 0.05;
@@ -30,14 +27,6 @@ function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
         (targetY.current - wireframeRef.current.position.y) * 0.1;
     }
   });
-
-  // Set initial rotation for static display when reduced motion is preferred
-  useEffect(() => {
-    if (!shouldAnimate && wireframeRef.current) {
-      wireframeRef.current.rotation.y = Math.PI / 4;
-      wireframeRef.current.rotation.x = Math.PI / 8;
-    }
-  }, [shouldAnimate]);
 
   return (
     <>
@@ -67,13 +56,7 @@ function Sphere({ shouldAnimate, scrollOffset }: SphereProps) {
   );
 }
 
-interface SphereBackgroundProps {
-  shouldAnimate: boolean;
-}
-
-export default function SphereBackground({
-  shouldAnimate,
-}: SphereBackgroundProps) {
+export default function SphereBackground() {
   const [dpr, setDpr] = useState(1);
   const [scrollOffset, setScrollOffset] = useState(0);
 
@@ -112,7 +95,6 @@ export default function SphereBackground({
       <Canvas
         camera={{ position: [0, 0, 8], fov: 60 }}
         dpr={dpr}
-        frameloop={shouldAnimate ? "always" : "never"}
         gl={{
           antialias: dpr <= 1.5,
           alpha: true,
@@ -120,7 +102,7 @@ export default function SphereBackground({
           depth: true,
         }}
       >
-        <Sphere shouldAnimate={shouldAnimate} scrollOffset={scrollOffset} />
+        <Sphere scrollOffset={scrollOffset} />
       </Canvas>
     </div>
   );

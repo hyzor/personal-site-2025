@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 
 const SphereBackground = dynamic(() => import("./sphereBackground"), {
@@ -30,21 +30,8 @@ interface TravelingParticle {
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [shouldAnimate, setShouldAnimate] = useState(true);
   const animationRef = useRef<number | null>(null);
   const isPausedRef = useRef(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setShouldAnimate(!mediaQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setShouldAnimate(!e.matches);
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -91,83 +78,6 @@ export default function AnimatedBackground() {
 
     // Track traveling particles on connections
     const travelingParticles: TravelingParticle[] = [];
-
-    // Static render function for reduced motion
-    const renderStatic = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Build connections based on proximity
-      const connections: Connection[] = [];
-
-      for (let i = 0; i < nodes.length; i++) {
-        const nodeA = nodes[i];
-        const nearbyNodes: { index: number; distance: number }[] = [];
-
-        for (let j = i + 1; j < nodes.length; j++) {
-          const nodeB = nodes[j];
-          const dx = nodeB.x - nodeA.x;
-          const dy = nodeB.y - nodeA.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            nearbyNodes.push({ index: j, distance });
-          }
-        }
-
-        nearbyNodes.sort((a, b) => a.distance - b.distance);
-        const connectionsToMake = Math.min(
-          maxConnectionsPerNode,
-          nearbyNodes.length,
-        );
-
-        for (let k = 0; k < connectionsToMake; k++) {
-          const dist = nearbyNodes[k].distance;
-          const opacity = 1 - dist / connectionDistance;
-          connections.push({
-            from: i,
-            to: nearbyNodes[k].index,
-            opacity: opacity * 0.6,
-          });
-        }
-      }
-
-      // Draw connections - simplified
-      connections.forEach((conn) => {
-        const nodeA = nodes[conn.from];
-        const nodeB = nodes[conn.to];
-
-        ctx.beginPath();
-        ctx.moveTo(nodeA.x, nodeA.y);
-        ctx.lineTo(nodeB.x, nodeB.y);
-        ctx.strokeStyle = `rgba(0, 200, 255, ${conn.opacity * 0.5})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      });
-
-      // Draw nodes - simplified
-      nodes.forEach((node) => {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
-        ctx.fill();
-      });
-
-      // Draw nodes - simplified for performance
-      nodes.forEach((node) => {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
-        ctx.fill();
-      });
-    };
-
-    // If reduced motion is preferred, render static version only
-    if (!shouldAnimate) {
-      renderStatic();
-      return;
-    }
-
-    // Mouse interaction disabled
 
     const animate = () => {
       if (isPausedRef.current) return;
@@ -358,7 +268,7 @@ export default function AnimatedBackground() {
         animationRef.current = null;
       }
     };
-  }, [shouldAnimate]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-0">
@@ -384,7 +294,7 @@ export default function AnimatedBackground() {
         className="absolute inset-0 pointer-events-none"
         style={{ zIndex: 10 }}
       >
-        <SphereBackground shouldAnimate={shouldAnimate} />
+        <SphereBackground />
       </div>
     </div>
   );

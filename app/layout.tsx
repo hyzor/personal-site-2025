@@ -30,7 +30,7 @@ export const metadata: Metadata = {
       {
         url: "/profile.webp",
         width: 1200,
-        height: 630,
+        height: 1195,
         alt: `${siteConfig.name} - Full-Stack Developer`,
       },
     ],
@@ -62,10 +62,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#03020a" },
-  ],
+  colorScheme: "dark",
+  themeColor: "#03020a",
 };
 
 export default function RootLayout({
@@ -91,7 +89,13 @@ export default function RootLayout({
           Skip to main content
         </a>
         <AnimatedBackground />
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+        <Providers
+          themeProps={{
+            attribute: "class",
+            defaultTheme: "dark",
+            enableSystem: false,
+          }}
+        >
           <div className="relative flex flex-col z-10">
             <Navbar />
             <main
@@ -101,7 +105,7 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="w-full flex items-center justify-center py-8">
-              © 2026 Jesper Falkenby
+              © {new Date().getFullYear()} Jesper Falkenby
             </footer>
           </div>
         </Providers>

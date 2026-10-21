@@ -27,7 +27,10 @@ const readPixelRatio = () =>
   typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
 
 const ResumeLoading = () => (
-  <div className="flex min-h-[420px] w-full max-w-[900px] items-center justify-center rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500">
+  <div
+    className="flex min-h-[420px] w-full max-w-[900px] items-center justify-center rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500"
+    role="status"
+  >
     Loading résumé…
   </div>
 );
@@ -133,8 +136,6 @@ const Resume = () => {
             className="shadow-lg"
             devicePixelRatio={renderPixelRatio}
             pageNumber={1}
-            renderAnnotationLayer={true}
-            renderTextLayer={true}
             scale={scale}
           />
         )}

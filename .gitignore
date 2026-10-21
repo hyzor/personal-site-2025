@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -14,6 +12,9 @@
 
 # production
 /build
+
+# generated assets
+/public/pdf.worker.mjs
 
 # misc
 .DS_Store
@@ -38,9 +39,10 @@ next-env.d.ts
 /.screens
 /.tmp-site
 /.tmp
+/.tmp-*/
 *.log
 
+# package manager lockfiles (Bun owns bun.lock)
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
-bun.lockb

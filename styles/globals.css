@@ -7,8 +7,8 @@ body {
   max-width: 100vw;
 }
 
-* {
-  box-sizing: border-box;
+section[id] {
+  scroll-margin-top: 3rem;
 }
 
 /* Improve touch responsiveness on mobile */
@@ -21,25 +21,13 @@ button,
   user-select: none;
 }
 
-/* Specific touch improvements */
-.touch-manipulation {
-  touch-action: manipulation;
-}
-
-/* Prevent double-tap zoom on all interactive elements */
+/* Prevent double-tap zoom on interactive elements */
 input,
 button,
 select,
 textarea,
 a {
   touch-action: manipulation;
-}
-
-/* Prevent double-tap zoom on interactive elements */
-.navbar-menu-toggle {
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 body::before {
@@ -65,8 +53,14 @@ body::before {
       rgba(139, 92, 246, 0.05) 0%,
       transparent 50%
     );
-  background-size: 100% 100%, 100% 100%, 100% 100%;
-  background-position: 0% 0%, 0% 100%, 100% 100%;
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position:
+    0% 0%,
+    0% 100%,
+    100% 100%;
   pointer-events: none;
   z-index: 1;
 }

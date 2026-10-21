@@ -4,7 +4,10 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
 const ResumePlaceholder = ({ label }: { label: string }) => (
-  <div className="flex min-h-[420px] w-full max-w-[900px] items-center justify-center rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500">
+  <div
+    className="flex min-h-[420px] w-full max-w-[900px] items-center justify-center rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500"
+    role="status"
+  >
     {label}
   </div>
 );

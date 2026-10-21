@@ -3,7 +3,7 @@ export type SiteConfig = typeof siteConfig;
 export const siteConfig = {
   name: "Jesper Falkenby",
   description:
-    "Full-Stack Developer specializing in JavaScript, TypeScript, React, Node.js, Java, and cloud technologies. Personal portfolio showcasing projects, publications, and professional experience.",
+    "Full-Stack Developer specializing in JavaScript, TypeScript, React, Node.js, Java, and cloud technologies. Personal portfolio with publications, résumé, and professional background.",
   url: "https://falkenby.com",
   author: "Jesper Falkenby",
   keywords: [

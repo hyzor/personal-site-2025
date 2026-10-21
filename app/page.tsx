@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <>
       <Section
-        className="-mt-16"
+        className="-mt-14"
         headingLevel={1}
         id="home"
         showPanel={false}

@@ -92,12 +92,6 @@ body::before {
   animation: nebula-drift 48s ease-in-out infinite alternate;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nebula-blob {
-    animation: none;
-  }
-}
-
 @keyframes fade-in-out {
   0%,
   100% {

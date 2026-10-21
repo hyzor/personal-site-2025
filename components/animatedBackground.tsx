@@ -239,7 +239,6 @@ export default function AnimatedBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const glowSprites = STAR_PALETTE.map((color) =>
       createGlowSprite(color.glow),
     );
@@ -646,7 +645,7 @@ export default function AnimatedBackground() {
     };
 
     const syncAnimation = () => {
-      const shouldPause = document.hidden || motionQuery.matches;
+      const shouldPause = document.hidden;
 
       isPausedRef.current = shouldPause;
 
@@ -656,7 +655,7 @@ export default function AnimatedBackground() {
           animationRef.current = null;
         }
 
-        // Keep a still, fully rendered sky for reduced-motion users.
+        // Keep the last frame painted while the tab is in the background.
         drawFrame(performance.now(), 0);
 
         return;
@@ -681,14 +680,12 @@ export default function AnimatedBackground() {
     resizeObserver?.observe(canvas);
     window.addEventListener("resize", scheduleResize);
     document.addEventListener("visibilitychange", syncAnimation);
-    motionQuery.addEventListener("change", syncAnimation);
 
     return () => {
       resizeObserver?.disconnect();
       window.removeEventListener("resize", scheduleResize);
 
       document.removeEventListener("visibilitychange", syncAnimation);
-      motionQuery.removeEventListener("change", syncAnimation);
 
       if (resizeRaf !== null) {
         cancelAnimationFrame(resizeRaf);

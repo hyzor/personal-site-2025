@@ -24,15 +24,7 @@ export const Navbar = () => {
     const targetId = href.replace("#", "");
     const targetElement = document.getElementById(targetId);
 
-    if (targetElement) {
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-
-      targetElement.scrollIntoView({
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    }
+    targetElement?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef } from "react";
 
 export function ScrollIndicator() {
@@ -8,16 +9,30 @@ export function ScrollIndicator() {
     const el = ref.current;
     if (!el) return;
 
-    const handleScroll = () => {
+    let frame: number | null = null;
+
+    const update = () => {
+      frame = null;
+
       const scrollY = window.scrollY;
       const fadeDistance = window.innerHeight * 0.3;
       el.style.opacity = String(Math.max(0, 1 - scrollY / fadeDistance));
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    const handleScroll = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(update);
+    };
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    update();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+    };
   }, []);
 
   return (

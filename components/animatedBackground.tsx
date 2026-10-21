@@ -1,13 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 
-import { useReducedMotion } from "./useReducedMotion";
+const FRAME_INTERVAL = 1000 / 30;
+const FULL_FRAME_MS = 1000 / 60;
+const NODE_COUNT = 60;
+const CONNECTION_DISTANCE = 280;
+const CONNECTION_DISTANCE_SQ = CONNECTION_DISTANCE * CONNECTION_DISTANCE;
+const MAX_CONNECTIONS_PER_NODE = 5;
+const CONNECTION_REBUILD_FRAMES = 8;
+const OPACITY_BUCKETS = 8;
+const MAX_CONNECTION_ALPHA = 0.3;
+const TAU = Math.PI * 2;
 
-const SphereBackground = dynamic(() => import("./sphereBackground"), {
-  ssr: false,
-});
+const CONNECTION_COLORS = Array.from(
+  { length: OPACITY_BUCKETS },
+  (_, index) =>
+    `rgba(0, 200, 255, ${(
+      ((index + 1) / OPACITY_BUCKETS) *
+      MAX_CONNECTION_ALPHA
+    ).toFixed(3)})`,
+);
 
 interface Node {
   x: number;
@@ -20,35 +33,20 @@ interface Node {
 interface Connection {
   from: number;
   to: number;
-  opacity: number;
 }
+
+interface NearbyNode {
+  index: number;
+  distanceSq: number;
+}
+
+const byDistance = (a: NearbyNode, b: NearbyNode) =>
+  a.distanceSq - b.distanceSq;
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const isPausedRef = useRef(false);
-  const prefersReducedMotion = useReducedMotion();
-  const [showSphere, setShowSphere] = useState(false);
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setShowSphere(false);
-      return;
-    }
-
-    if (window.matchMedia("(max-width: 767px)").matches) {
-      setShowSphere(false);
-      return;
-    }
-
-    // Delay the Three.js scene until after hydration to keep the main thread
-    // free during the initial render.
-    const timeout = window.setTimeout(() => setShowSphere(true), 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,33 +57,17 @@ export default function AnimatedBackground() {
 
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const updateCanvasSize = () => {
-      const width = Math.max(
-        document.documentElement.clientWidth,
-        window.innerWidth,
-      );
-      const height = Math.max(
-        document.documentElement.clientHeight,
-        window.innerHeight,
-      );
+    // The canvas is sized by CSS, so use its rendered size for the backing
+    // store instead of mixing window and document measurements.
+    const initialWidth = canvas.clientWidth || window.innerWidth;
+    const initialHeight = canvas.clientHeight || window.innerHeight;
 
-      canvas.width = width;
-      canvas.height = height;
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
-    };
-
-    updateCanvasSize();
-
-    // Configuration for web-like network - reduced for 4K performance
-    const connectionDistance = 280;
-    const numNodes = 60;
-    const maxConnectionsPerNode = 5;
+    canvas.width = initialWidth;
+    canvas.height = initialHeight;
 
     const nodes: Node[] = [];
 
-    // Create nodes with varied sizes
-    for (let i = 0; i < numNodes; i++) {
+    for (let i = 0; i < NODE_COUNT; i++) {
       nodes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -95,35 +77,100 @@ export default function AnimatedBackground() {
       });
     }
 
-    // Track traveling particles on connections
-    const connections: Connection[] = [];
-    const nearbyNodes: { index: number; distance: number }[] = [];
+    // Group connections by opacity so each frame uses a handful of strokes
+    // instead of changing strokeStyle for every line.
+    const connections: Connection[][] = Array.from(
+      { length: OPACITY_BUCKETS },
+      () => [],
+    );
+    const nearbyNodes: NearbyNode[] = [];
     let frameCount = 0;
+    let lastFrameTime = 0;
+    let resizeRaf: number | null = null;
 
-    const animate = () => {
+    const resizeCanvas = () => {
+      const width = canvas.clientWidth || window.innerWidth;
+      const height = canvas.clientHeight || window.innerHeight;
+
+      if (!width || !height) return;
+      if (width === canvas.width && height === canvas.height) return;
+
+      // Preserve the relative particle layout when the viewport changes.
+      const scaleX = width / canvas.width;
+      const scaleY = height / canvas.height;
+
+      for (let i = 0; i < nodes.length; i++) {
+        nodes[i].x *= scaleX;
+        nodes[i].y *= scaleY;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      for (let i = 0; i < connections.length; i++) {
+        connections[i].length = 0;
+      }
+
+      // Force connection recalculation on the next rendered frame.
+      frameCount = CONNECTION_REBUILD_FRAMES;
+    };
+
+    const scheduleResize = () => {
+      if (resizeRaf !== null) return;
+
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = null;
+        resizeCanvas();
+      });
+    };
+
+    const animate = (time: number) => {
       if (isPausedRef.current) return;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      animationRef.current = requestAnimationFrame(animate);
 
-      // Update nodes
-      nodes.forEach((node) => {
-        // Apply constant velocity (linear movement)
-        node.x += node.vx;
-        node.y += node.vy;
+      const elapsed =
+        lastFrameTime === 0 ? FRAME_INTERVAL : time - lastFrameTime;
 
-        // Bounce off edges
-        if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
-        if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+      if (elapsed < FRAME_INTERVAL - 1) return;
 
-        // Keep within bounds
-        node.x = Math.max(0, Math.min(canvas.width, node.x));
-        node.y = Math.max(0, Math.min(canvas.height, node.y));
-      });
+      lastFrameTime = time;
 
-      // Recalculate connections every 15 frames (nodes move slowly)
-      if (++frameCount === 15) {
+      const frameScale = Math.min(elapsed / FULL_FRAME_MS, 2.5);
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+
+        node.x += node.vx * frameScale;
+        node.y += node.vy * frameScale;
+
+        if (node.x <= 0) {
+          node.x = 0;
+          node.vx = Math.abs(node.vx);
+        } else if (node.x >= width) {
+          node.x = width;
+          node.vx = -Math.abs(node.vx);
+        }
+
+        if (node.y <= 0) {
+          node.y = 0;
+          node.vy = Math.abs(node.vy);
+        } else if (node.y >= height) {
+          node.y = height;
+          node.vy = -Math.abs(node.vy);
+        }
+      }
+
+      if (++frameCount >= CONNECTION_REBUILD_FRAMES) {
         frameCount = 0;
-        connections.length = 0;
+
+        for (let i = 0; i < connections.length; i++) {
+          connections[i].length = 0;
+        }
 
         for (let i = 0; i < nodes.length; i++) {
           const nodeA = nodes[i];
@@ -133,53 +180,72 @@ export default function AnimatedBackground() {
             const nodeB = nodes[j];
             const dx = nodeB.x - nodeA.x;
             const dy = nodeB.y - nodeA.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const distanceSq = dx * dx + dy * dy;
 
-            if (distance < connectionDistance) {
-              nearbyNodes.push({ index: j, distance });
+            if (distanceSq < CONNECTION_DISTANCE_SQ) {
+              nearbyNodes.push({ index: j, distanceSq });
             }
           }
 
-          nearbyNodes.sort((a, b) => a.distance - b.distance);
+          nearbyNodes.sort(byDistance);
+
           const connectionsToMake = Math.min(
-            maxConnectionsPerNode,
+            MAX_CONNECTIONS_PER_NODE,
             nearbyNodes.length,
           );
 
           for (let k = 0; k < connectionsToMake; k++) {
-            const dist = nearbyNodes[k].distance;
-            const opacity = 1 - dist / connectionDistance;
-            connections.push({
-              from: i,
-              to: nearbyNodes[k].index,
-              opacity: opacity * 0.6,
-            });
+            const nearby = nearbyNodes[k];
+            const relativeDistance =
+              1 - Math.sqrt(nearby.distanceSq) / CONNECTION_DISTANCE;
+            const bucket = Math.min(
+              OPACITY_BUCKETS - 1,
+              Math.floor(relativeDistance * OPACITY_BUCKETS),
+            );
+
+            connections[bucket].push({ from: i, to: nearby.index });
           }
         }
       }
 
-      // Draw connections - simplified, no gradients
-      connections.forEach((conn) => {
-        const nodeA = nodes[conn.from];
-        const nodeB = nodes[conn.to];
+      ctx.lineWidth = 1;
 
+      for (
+        let bucketIndex = 0;
+        bucketIndex < connections.length;
+        bucketIndex++
+      ) {
+        const bucket = connections[bucketIndex];
+
+        if (bucket.length === 0) continue;
+
+        ctx.strokeStyle = CONNECTION_COLORS[bucketIndex];
         ctx.beginPath();
-        ctx.moveTo(nodeA.x, nodeA.y);
-        ctx.lineTo(nodeB.x, nodeB.y);
-        ctx.strokeStyle = `rgba(0, 200, 255, ${conn.opacity * 0.5})`;
-        ctx.lineWidth = 1;
+
+        for (let k = 0; k < bucket.length; k++) {
+          const connection = bucket[k];
+          const nodeA = nodes[connection.from];
+          const nodeB = nodes[connection.to];
+
+          ctx.moveTo(nodeA.x, nodeA.y);
+          ctx.lineTo(nodeB.x, nodeB.y);
+        }
+
         ctx.stroke();
-      });
+      }
 
-      // Draw nodes - simplified for performance
-      nodes.forEach((node) => {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
-        ctx.fill();
-      });
+      // Draw every node as a single path and fill it once.
+      ctx.beginPath();
 
-      animationRef.current = requestAnimationFrame(animate);
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+
+        ctx.moveTo(node.x + node.radius, node.y);
+        ctx.arc(node.x, node.y, node.radius, 0, TAU);
+      }
+
+      ctx.fillStyle = "rgba(0, 255, 255, 0.8)";
+      ctx.fill();
     };
 
     const syncAnimation = () => {
@@ -196,60 +262,36 @@ export default function AnimatedBackground() {
       }
 
       if (animationRef.current === null) {
+        lastFrameTime = 0;
         animationRef.current = requestAnimationFrame(animate);
       }
     };
 
-    // Start only when the tab is visible and motion is allowed
     syncAnimation();
 
-    let resizeTimeout: NodeJS.Timeout;
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(scheduleResize)
+        : null;
 
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      updateCanvasSize();
-      resizeTimeout = setTimeout(() => {
-        nodes.forEach((node) => {
-          node.x = Math.random() * canvas.width;
-          node.y = Math.random() * canvas.height;
-        });
-      }, 100);
-    };
-
-    const handleOrientationChange = () => {
-      setTimeout(updateCanvasSize, 100);
-    };
-
-    const handleVisualViewportResize = () => {
-      updateCanvasSize();
-    };
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleOrientationChange);
+    resizeObserver?.observe(canvas);
+    window.addEventListener("resize", scheduleResize);
     document.addEventListener("visibilitychange", syncAnimation);
     motionQuery.addEventListener("change", syncAnimation);
 
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener(
-        "resize",
-        handleVisualViewportResize,
-      );
-    }
-
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleOrientationChange);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", scheduleResize);
 
       document.removeEventListener("visibilitychange", syncAnimation);
       motionQuery.removeEventListener("change", syncAnimation);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener(
-          "resize",
-          handleVisualViewportResize,
-        );
+
+      if (resizeRaf !== null) {
+        cancelAnimationFrame(resizeRaf);
+        resizeRaf = null;
       }
-      clearTimeout(resizeTimeout);
-      if (animationRef.current) {
+
+      if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
@@ -265,24 +307,10 @@ export default function AnimatedBackground() {
             "linear-gradient(135deg, #000000 0%, #0a0a1e 50%, #0a0a2e 100%)",
         }}
       />
-      {/* 3D Sphere Background - rendered on top */}
-      {showSphere && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ zIndex: 1 }}
-        >
-          <SphereBackground />
-        </div>
-      )}
-      {/* Particle network - rendered behind sphere */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          width: "100vw",
-          height: "100vh",
-          zIndex: 0,
-        }}
+        className="absolute inset-0 h-full w-full pointer-events-none"
+        style={{ zIndex: 0 }}
       />
     </div>
   );

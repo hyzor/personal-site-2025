@@ -1,5 +1,3 @@
-"use client";
-
 import clsx from "clsx";
 
 import { title } from "@/components/primitives";
@@ -28,14 +26,14 @@ export function Section({
 
   return (
     <section
-      className={`flex flex-col items-center justify-center gap-4 py-20 md:py-20 min-h-screen relative ${className || ""}`}
+      className={`flex flex-col items-center justify-center gap-4 py-20 min-h-screen relative ${className || ""}`}
       id={id}
     >
       <div
         className={clsx(
           "w-full max-w-5xl px-6 py-8 text-center",
           showPanel
-            ? "rounded-3xl border border-default-200/30 bg-slate-950/20 backdrop-blur-sm"
+            ? "rounded-3xl border border-default-200/30 bg-slate-950/75"
             : "[text-shadow:0_2px_16px_rgba(0,0,0,0.85)]",
         )}
       >

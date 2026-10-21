@@ -17,11 +17,12 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main>
+    <>
       <Section
         className="-mt-16"
         headingLevel={1}
         id="home"
+        showPanel={false}
         title="Jesper Falkenby"
         showScrollIndicator
       >
@@ -53,7 +54,7 @@ export default function Home() {
         </div>
       </Section>
       <Section headingLevel={2} id="contact" title="Contact">
-        <div className="flex gap-4 mt-8">
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Button
             as="a"
             href={siteConfig.links.github}
@@ -84,6 +85,6 @@ export default function Home() {
           </Button>
         </div>
       </Section>
-    </main>
+    </>
   );
 }

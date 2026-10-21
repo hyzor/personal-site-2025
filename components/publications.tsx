@@ -1,59 +1,37 @@
-"use client";
-
-import { Pagination } from "@heroui/pagination";
-import { useState } from "react";
-
 import publicationsData from "@/data/publications.json";
 
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+  year: "numeric",
+});
+
 export function Publications() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1;
-
   return (
-    <div className="mt-8 space-y-6">
-      {(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const currentPublications = publicationsData.slice(
-          startIndex,
-          endIndex,
-        );
-
-        return currentPublications.map((pub, index) => (
-          <div key={index} className="space-y-4">
-            <div>
-              <h3 className="text-xl font-semibold">{pub.title}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {pub.institution} •{" "}
-                {new Date(pub.date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}{" "}
-                • {pub.description}
+    <div className="mt-8 space-y-8 text-left">
+      {publicationsData.map((publication) => (
+        <article
+          key={publication.title}
+          className="rounded-2xl border border-default-200/60 p-5 sm:p-6"
+        >
+          <h3 className="text-xl font-semibold">{publication.title}</h3>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {publication.institution} •{" "}
+            <time dateTime={publication.date}>
+              {dateFormatter.format(new Date(publication.date))}
+            </time>{" "}
+            • {publication.description}
+          </p>
+          <div className="mt-4 space-y-3">
+            {publication.body.paragraphs.map((paragraph, index) => (
+              <p key={index} className="text-gray-700 dark:text-gray-300">
+                {paragraph}
               </p>
-            </div>
-            <div className="space-y-3">
-              {pub.body.paragraphs.map((paragraph, pIndex) => (
-                <p key={pIndex} className="text-gray-700 dark:text-gray-300">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            ))}
           </div>
-        ));
-      })()}
-      {publicationsData.length > itemsPerPage && (
-        <div className="flex justify-center mt-8">
-          <Pagination
-            showControls
-            showShadow
-            page={currentPage}
-            total={Math.ceil(publicationsData.length / itemsPerPage)}
-            onChange={setCurrentPage}
-          />
-        </div>
-      )}
+        </article>
+      ))}
     </div>
   );
 }

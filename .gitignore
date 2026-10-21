@@ -34,6 +34,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# local test and browser artifacts
+/.screens
+/.tmp-site
+/.tmp
+*.log
+
 pnpm-lock.yaml
 yarn.lock
 package-lock.json

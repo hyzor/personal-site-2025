@@ -1,21 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Page, Document, pdfjs } from "react-pdf";
+import { useEffect, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+const RESUME_URL = "/resume.pdf";
+
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
-export default function Resume() {
+const ResumeLoading = () => (
+  <div className="flex min-h-[420px] w-full max-w-[600px] items-center justify-center rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500">
+    Loading résumé…
+  </div>
+);
+
+const ResumeError = () => (
+  <div className="flex min-h-[420px] w-full max-w-[600px] flex-col items-center justify-center gap-3 rounded-lg border border-default-200/60 bg-slate-950/20 px-6 text-center text-sm text-default-500">
+    <p>Unable to display the résumé.</p>
+    <a
+      className="text-primary underline-offset-4 hover:underline"
+      href={RESUME_URL}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Open the PDF in a new tab
+    </a>
+  </div>
+);
+
+const Resume = () => {
   const [scale, setScale] = useState(1.5);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 640,
+  );
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
     const updateScale = () => {
       const width = window.innerWidth;
+
+      setIsMobile(width < 640);
 
       if (width < 640) {
         setScale((width - 40) / 600);
@@ -41,21 +68,25 @@ export default function Resume() {
     };
   }, []);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-
   return (
     <div className={isMobile ? "overflow-x-auto px-5" : ""}>
       <div className={isMobile ? "min-w-fit" : "flex justify-center"}>
-        <Document file="/resume.pdf">
+        <Document
+          error={<ResumeError />}
+          file={RESUME_URL}
+          loading={<ResumeLoading />}
+        >
           <Page
-            pageNumber={1}
-            scale={scale}
-            renderTextLayer={true}
-            renderAnnotationLayer={true}
             className="shadow-lg"
+            pageNumber={1}
+            renderAnnotationLayer={true}
+            renderTextLayer={true}
+            scale={scale}
           />
         </Document>
       </div>
     </div>
   );
-}
+};
+
+export default Resume;

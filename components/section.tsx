@@ -1,4 +1,7 @@
 "use client";
+
+import clsx from "clsx";
+
 import { title } from "@/components/primitives";
 import { ScrollIndicator } from "@/components/scrollIndicator";
 
@@ -8,6 +11,7 @@ interface SectionProps {
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   children?: React.ReactNode;
   className?: string;
+  showPanel?: boolean;
   showScrollIndicator?: boolean;
 }
 
@@ -17,6 +21,7 @@ export function Section({
   headingLevel = 2,
   children,
   className,
+  showPanel = true,
   showScrollIndicator = false,
 }: SectionProps) {
   const HeadingTag = `h${headingLevel}` as const;
@@ -26,7 +31,14 @@ export function Section({
       className={`flex flex-col items-center justify-center gap-4 py-20 md:py-20 min-h-screen relative ${className || ""}`}
       id={id}
     >
-      <div className="inline-block max-w-5xl text-center px-6 py-8 rounded-2xl bg-slate-950/20 backdrop-blur-sm">
+      <div
+        className={clsx(
+          "w-full max-w-5xl px-6 py-8 text-center",
+          showPanel
+            ? "rounded-3xl border border-default-200/30 bg-slate-950/20 backdrop-blur-sm"
+            : "[text-shadow:0_2px_16px_rgba(0,0,0,0.85)]",
+        )}
+      >
         <HeadingTag className={title()}>{sectionTitle}</HeadingTag>
         {children}
       </div>

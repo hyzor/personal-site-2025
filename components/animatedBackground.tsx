@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+
+import { useReducedMotion } from "./useReducedMotion";
 
 const SphereBackground = dynamic(() => import("./sphereBackground"), {
   ssr: false,
@@ -25,6 +27,28 @@ export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const isPausedRef = useRef(false);
+  const prefersReducedMotion = useReducedMotion();
+  const [showSphere, setShowSphere] = useState(false);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setShowSphere(false);
+      return;
+    }
+
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setShowSphere(false);
+      return;
+    }
+
+    // Delay the Three.js scene until after hydration to keep the main thread
+    // free during the initial render.
+    const timeout = window.setTimeout(() => setShowSphere(true), 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -32,6 +56,8 @@ export default function AnimatedBackground() {
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const updateCanvasSize = () => {
       const width = Math.max(
@@ -156,23 +182,26 @@ export default function AnimatedBackground() {
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        isPausedRef.current = true;
-        if (animationRef.current) {
+    const syncAnimation = () => {
+      const shouldPause = document.hidden || motionQuery.matches;
+
+      isPausedRef.current = shouldPause;
+
+      if (shouldPause) {
+        if (animationRef.current !== null) {
           cancelAnimationFrame(animationRef.current);
           animationRef.current = null;
         }
-      } else {
-        isPausedRef.current = false;
-        if (!animationRef.current) {
-          animationRef.current = requestAnimationFrame(animate);
-        }
+        return;
+      }
+
+      if (animationRef.current === null) {
+        animationRef.current = requestAnimationFrame(animate);
       }
     };
 
-    // Start animation
-    animationRef.current = requestAnimationFrame(animate);
+    // Start only when the tab is visible and motion is allowed
+    syncAnimation();
 
     let resizeTimeout: NodeJS.Timeout;
 
@@ -197,7 +226,8 @@ export default function AnimatedBackground() {
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleOrientationChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("visibilitychange", syncAnimation);
+    motionQuery.addEventListener("change", syncAnimation);
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener(
@@ -210,7 +240,8 @@ export default function AnimatedBackground() {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
 
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", syncAnimation);
+      motionQuery.removeEventListener("change", syncAnimation);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener(
           "resize",
@@ -226,7 +257,7 @@ export default function AnimatedBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0" style={{ zIndex: 0 }}>
+    <div aria-hidden="true" className="fixed inset-0" style={{ zIndex: 0 }}>
       <div
         className="absolute inset-0"
         style={{
@@ -235,12 +266,14 @@ export default function AnimatedBackground() {
         }}
       />
       {/* 3D Sphere Background - rendered on top */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 1 }}
-      >
-        <SphereBackground />
-      </div>
+      {showSphere && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ zIndex: 1 }}
+        >
+          <SphereBackground />
+        </div>
+      )}
       {/* Particle network - rendered behind sphere */}
       <canvas
         ref={canvasRef}

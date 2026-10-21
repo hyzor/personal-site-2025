@@ -26,7 +26,13 @@ export const Navbar = () => {
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth" });
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      targetElement.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
     }
   };
 
@@ -65,6 +71,21 @@ export const Navbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const handleDesktopChange = () => {
+      if (desktopQuery.matches) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    desktopQuery.addEventListener("change", handleDesktopChange);
+
+    return () => {
+      desktopQuery.removeEventListener("change", handleDesktopChange);
+    };
+  }, []);
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md overflow-hidden">
       <HeroUINavbar
@@ -82,10 +103,10 @@ export const Navbar = () => {
         }}
       >
         <NavbarContent
-          className="basis-1/5 sm:basis-full overflow-hidden"
+          className="hidden basis-1/5 overflow-hidden lg:flex lg:basis-full"
           justify="start"
         >
-          <ul className="hidden lg:flex gap-2 sm:gap-4 justify-start overflow-x-hidden flex-nowrap">
+          <ul className="flex flex-nowrap justify-start gap-2 overflow-x-hidden sm:gap-4">
             {siteConfig.navItems.map((item) => {
               const targetId = item.href.replace("#", "");
               const isActive = activeSection === targetId;
@@ -93,10 +114,11 @@ export const Navbar = () => {
               return (
                 <NavbarItem key={item.href} className="flex-shrink-0">
                   <a
+                    aria-current={isActive ? "location" : undefined}
                     className={clsx(
                       linkStyles({ color: "foreground" }),
                       isActive ? "text-primary font-medium" : "",
-                      "text-sm sm:text-base whitespace-nowrap",
+                      "text-sm whitespace-nowrap sm:text-base",
                     )}
                     href={item.href}
                     onClick={(e) => handleSmoothScroll(e, item.href)}
@@ -110,10 +132,10 @@ export const Navbar = () => {
         </NavbarContent>
 
         <NavbarContent
-          className="hidden sm:flex basis-1/5 sm:basis-full overflow-hidden"
+          className="hidden basis-1/5 overflow-hidden lg:flex lg:basis-full"
           justify="end"
         >
-          <NavbarItem className="hidden sm:flex gap-2 sm:gap-4 flex-shrink-0">
+          <NavbarItem className="flex flex-shrink-0 gap-2 sm:gap-4">
             <Link isExternal aria-label="Github" href={siteConfig.links.github}>
               <GithubIcon className="text-default-500" />
             </Link>
@@ -130,8 +152,11 @@ export const Navbar = () => {
           </NavbarItem>
         </NavbarContent>
 
-        <NavbarContent className="sm:hidden basis-1 pl-2 pr-2" justify="end">
-          <div className="flex gap-3 items-center flex-shrink-0">
+        <NavbarContent
+          className="flex basis-1 pl-2 pr-2 lg:hidden"
+          justify="end"
+        >
+          <NavbarItem className="flex flex-shrink-0 items-center gap-3">
             <Link isExternal aria-label="Github" href={siteConfig.links.github}>
               <GithubIcon className="text-default-500" />
             </Link>
@@ -145,19 +170,25 @@ export const Navbar = () => {
             >
               <LinkedInIcon className="text-default-500" />
             </Link>
-            <NavbarMenuToggle className="ml-4 touch-manipulation" />
-          </div>
+            <NavbarMenuToggle
+              aria-label={
+                isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+              }
+              className="ml-1 touch-manipulation"
+            />
+          </NavbarItem>
         </NavbarContent>
 
         <NavbarMenu>
           <div className="mx-4 mt-2 flex flex-col gap-2">
-            {siteConfig.navItems.map((item, index) => {
+            {siteConfig.navItems.map((item) => {
               const targetId = item.href.replace("#", "");
               const isActive = activeSection === targetId;
 
               return (
-                <NavbarMenuItem key={`${item}-${index}`}>
+                <NavbarMenuItem key={item.href}>
                   <Link
+                    aria-current={isActive ? "location" : undefined}
                     color={isActive ? "primary" : "foreground"}
                     href={item.href}
                     size="lg"

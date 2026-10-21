@@ -23,14 +23,14 @@ export function ScrollIndicator() {
   return (
     <div
       ref={ref}
-      className="absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-opacity duration-300"
+      className="absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-opacity duration-300 motion-reduce:transition-none"
     >
       <div className="flex flex-col items-center gap-2">
-        <span className="text-sm tracking-wide font-medium text-default-500 dark:text-default-400 animate-fade-in-out">
+        <span className="text-sm tracking-wide font-medium text-default-500 dark:text-default-400 animate-fade-in-out motion-reduce:animate-none">
           Scroll
         </span>
         <svg
-          className="w-6 h-6 text-gray-500 dark:text-gray-400 animate-bounce"
+          className="w-6 h-6 text-gray-500 dark:text-gray-400 animate-bounce motion-reduce:animate-none"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

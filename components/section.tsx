@@ -33,7 +33,7 @@ export function Section({
         className={clsx(
           "w-full max-w-5xl px-6 py-8 text-center",
           showPanel
-            ? "rounded-3xl border border-default-200/30 bg-slate-950/75"
+            ? "rounded-3xl border border-default-200/30 bg-zinc-900/65"
             : "[text-shadow:0_2px_16px_rgba(0,0,0,0.85)]",
         )}
       >

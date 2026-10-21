@@ -86,18 +86,18 @@ export const Navbar = () => {
   }, []);
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 border-b border-indigo-300/15 bg-gradient-to-b from-[#121534]/92 via-[#0b0d25]/88 to-[#070a1c]/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_50px_-28px_rgba(1,3,12,0.95)] backdrop-blur-xl">
+    <div className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-gradient-to-b from-[#30303a]/80 via-[#27272f]/76 to-[#202026]/81 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_45px_-26px_rgba(0,0,0,0.85)] backdrop-blur-2xl backdrop-saturate-50">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-indigo-400/[0.12] via-violet-500/[0.04] to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-transparent"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-300/50 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
       />
       <HeroUINavbar
         isMenuOpen={isMenuOpen}
-        height="3.5rem"
+        height="3rem"
         maxWidth="full"
         position="static"
         onMenuOpenChange={setIsMenuOpen}
@@ -105,30 +105,30 @@ export const Navbar = () => {
         classNames={{
           wrapper:
             "bg-transparent px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden",
-          menu: "bg-[#0a0c24]/97 backdrop-blur-xl",
+          menu: "bg-[#202026]/90 backdrop-blur-2xl backdrop-saturate-50",
           menuItem: "bg-transparent",
-          toggle: "text-indigo-100",
+          toggle: "text-zinc-200",
         }}
       >
         <NavbarContent
           className="hidden basis-1/5 overflow-hidden lg:flex lg:basis-full"
           justify="start"
         >
-          <ul className="flex flex-nowrap justify-start gap-1 overflow-x-hidden sm:gap-2">
+          <ul className="flex h-full flex-nowrap items-stretch justify-start overflow-x-hidden">
             {siteConfig.navItems.map((item) => {
               const targetId = item.href.replace("#", "");
               const isActive = activeSection === targetId;
 
               return (
-                <NavbarItem key={item.href} className="flex-shrink-0">
+                <NavbarItem key={item.href} className="h-full flex-shrink-0">
                   <a
                     aria-current={isActive ? "location" : undefined}
                     className={clsx(
-                      "relative inline-flex items-center rounded-full px-3 py-1 text-sm whitespace-nowrap transition-colors duration-200 sm:text-base",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#070a1c]",
+                      "relative inline-flex h-full items-center px-3 text-sm whitespace-nowrap transition-colors duration-200 sm:px-4 sm:text-base",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#101013]",
                       isActive
-                        ? "bg-indigo-400/15 font-medium text-white ring-1 ring-inset ring-indigo-300/20"
-                        : "text-zinc-200/90 hover:bg-white/[0.06] hover:text-white",
+                        ? "bg-white/[0.08] font-medium text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-white/70"
+                        : "text-zinc-300/85 hover:bg-white/[0.05] hover:text-white",
                     )}
                     href={item.href}
                     onClick={(e) => handleSmoothScroll(e, item.href)}
@@ -152,7 +152,7 @@ export const Navbar = () => {
               className="group"
               href={siteConfig.links.github}
             >
-              <GithubIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <GithubIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <Link
               isExternal
@@ -160,14 +160,14 @@ export const Navbar = () => {
               className="group"
               href={siteConfig.links.linkedin}
             >
-              <LinkedInIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <LinkedInIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <Link
               aria-label="Email"
               className="group"
               href={siteConfig.links.email}
             >
-              <MailIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <MailIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
           </NavbarItem>
         </NavbarContent>
@@ -183,14 +183,14 @@ export const Navbar = () => {
               className="group"
               href={siteConfig.links.github}
             >
-              <GithubIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <GithubIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <Link
               aria-label="Email"
               className="group"
               href={siteConfig.links.email}
             >
-              <MailIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <MailIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <Link
               isExternal
@@ -198,13 +198,13 @@ export const Navbar = () => {
               className="group"
               href={siteConfig.links.linkedin}
             >
-              <LinkedInIcon className="text-indigo-200/75 transition-colors group-hover:text-white" />
+              <LinkedInIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <NavbarMenuToggle
               aria-label={
                 isMenuOpen ? "Close navigation menu" : "Open navigation menu"
               }
-              className="ml-1 text-indigo-100 touch-manipulation"
+              className="ml-1 text-zinc-200 touch-manipulation"
             />
           </NavbarItem>
         </NavbarContent>
@@ -222,8 +222,8 @@ export const Navbar = () => {
                     className={clsx(
                       "block rounded-xl px-3 py-2 text-lg transition-colors",
                       isActive
-                        ? "bg-indigo-400/15 font-medium text-white ring-1 ring-inset ring-indigo-300/20"
-                        : "text-zinc-200/90 hover:bg-white/[0.06] hover:text-white",
+                        ? "bg-white/[0.08] font-medium text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-white/70"
+                        : "text-zinc-300/85 hover:bg-white/[0.05] hover:text-white",
                     )}
                     href={item.href}
                     onClick={(e) => {

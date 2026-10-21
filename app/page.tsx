@@ -1,18 +1,23 @@
-import { Button } from "@heroui/button";
+import type { Metadata } from "next";
 import Image from "next/image";
-import { subtitle } from "@/components/primitives";
-import { Section } from "@/components/section";
-import { Publications } from "@/components/publications";
+
+import { Button } from "@heroui/button";
+
 import { GithubIcon, LinkedInIcon, MailIcon } from "@/components/icons";
+import { subtitle } from "@/components/primitives";
+import { Publications } from "@/components/publications";
+import { Section } from "@/components/section";
+import ResumeViewer from "@/components/resumeViewer";
 import { siteConfig } from "@/config/site";
 import aboutData from "@/data/about.json";
-import ResumeViewer from "@/components/resumeViewer";
-import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Full-Stack Developer | Software Engineer",
+  title: "Full-Stack Developer | Jesper Falkenby",
   description:
     "Jesper Falkenby - Full-Stack Developer specializing in JavaScript, TypeScript, React, Node.js, Java, and cloud technologies. Explore my portfolio, publications, and professional experience.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function Home() {

@@ -8,6 +8,8 @@ export default function StructuredData() {
     jobTitle: "Full-Stack Developer",
     description: siteConfig.description,
     url: siteConfig.url,
+    image: `${siteConfig.url}/profile.webp`,
+    email: siteConfig.links.email.replace(/^mailto:/, ""),
     sameAs: [siteConfig.links.github, siteConfig.links.linkedin],
     knowsAbout: [
       "JavaScript",
@@ -45,8 +47,10 @@ export default function StructuredData() {
 
   return (
     <script
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+      }}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
   );
 }

@@ -38,7 +38,8 @@ export function ScrollIndicator() {
   return (
     <div
       ref={ref}
-      className="absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-opacity duration-300 motion-reduce:transition-none"
+      aria-hidden="true"
+      className="pointer-events-none absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-opacity duration-300 motion-reduce:transition-none"
     >
       <div className="flex flex-col items-center gap-2">
         <span className="text-sm tracking-wide font-medium text-default-500 dark:text-default-400 animate-fade-in-out motion-reduce:animate-none">

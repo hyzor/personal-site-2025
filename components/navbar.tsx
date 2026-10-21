@@ -1,31 +1,120 @@
 "use client";
 
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { Link } from "@heroui/link";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
   NavbarItem,
+  NavbarMenu,
   NavbarMenuItem,
+  NavbarMenuToggle,
 } from "@heroui/navbar";
-import { useState, useEffect } from "react";
-import { Link } from "@heroui/link";
 import clsx from "clsx";
 
-import { siteConfig } from "@/config/site";
 import { GithubIcon, LinkedInIcon, MailIcon } from "@/components/icons";
+import { siteConfig } from "@/config/site";
+
+// The glide runs even when the OS asks for reduced motion — it is part of the
+// site's feel — but wheel/touch/key input cancels it. See AGENTS.md before
+// adding a `prefers-reduced-motion` short-circuit.
+// NAVBAR_OFFSET matches the 3rem app bar height and `scroll-margin-top`.
+const NAVBAR_OFFSET = 48;
+const MIN_SCROLL_DURATION = 400;
+const MAX_SCROLL_DURATION = 900;
+
+const easeInOutCubic = (progress: number) =>
+  progress < 0.5
+    ? 4 * progress * progress * progress
+    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const scrollFrameRef = useRef<number | null>(null);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
 
-  const handleSmoothScroll = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
+  const stopScroll = () => {
+    if (scrollFrameRef.current !== null) {
+      cancelAnimationFrame(scrollFrameRef.current);
+      scrollFrameRef.current = null;
+    }
+
+    scrollCleanupRef.current?.();
+    scrollCleanupRef.current = null;
+  };
+
+  const handleSmoothScroll = (event: MouseEvent, href: string) => {
+    // Let the browser handle new-tab/window clicks and modified navigation.
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
     const targetId = href.replace("#", "");
     const targetElement = document.getElementById(targetId);
 
-    targetElement?.scrollIntoView({ behavior: "smooth" });
+    if (!targetElement) return;
+
+    stopScroll();
+
+    const startY = window.scrollY;
+    const targetY =
+      targetElement.getBoundingClientRect().top + startY - NAVBAR_OFFSET;
+    const distance = targetY - startY;
+
+    if (Math.abs(distance) < 2) return;
+
+    const duration = Math.min(
+      MAX_SCROLL_DURATION,
+      Math.max(MIN_SCROLL_DURATION, Math.abs(distance) * 0.35),
+    );
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+
+      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+
+      if (progress < 1) {
+        scrollFrameRef.current = requestAnimationFrame(step);
+        return;
+      }
+
+      stopScroll();
+    };
+
+    // A manual gesture should always win over the animation.
+    const cancelOnUserInput = () => stopScroll();
+
+    window.addEventListener("wheel", cancelOnUserInput, { passive: true });
+    window.addEventListener("touchstart", cancelOnUserInput, { passive: true });
+    window.addEventListener("keydown", cancelOnUserInput);
+    scrollCleanupRef.current = () => {
+      window.removeEventListener("wheel", cancelOnUserInput);
+      window.removeEventListener("touchstart", cancelOnUserInput);
+      window.removeEventListener("keydown", cancelOnUserInput);
+    };
+
+    scrollFrameRef.current = requestAnimationFrame(step);
   };
+
+  useEffect(() => {
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        cancelAnimationFrame(scrollFrameRef.current);
+      }
+
+      scrollCleanupRef.current?.();
+    };
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
@@ -123,7 +212,7 @@ export const Navbar = () => {
                         : "text-zinc-300/85 hover:bg-white/[0.05] hover:text-white",
                     )}
                     href={item.href}
-                    onClick={(e) => handleSmoothScroll(e, item.href)}
+                    onClick={(event) => handleSmoothScroll(event, item.href)}
                   >
                     {item.label}
                   </a>
@@ -178,19 +267,19 @@ export const Navbar = () => {
               <GithubIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <Link
-              aria-label="Email"
-              className="group"
-              href={siteConfig.links.email}
-            >
-              <MailIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
-            </Link>
-            <Link
               isExternal
               aria-label="LinkedIn"
               className="group"
               href={siteConfig.links.linkedin}
             >
               <LinkedInIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
+            </Link>
+            <Link
+              aria-label="Email"
+              className="group"
+              href={siteConfig.links.email}
+            >
+              <MailIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
             <NavbarMenuToggle
               aria-label={
@@ -212,14 +301,14 @@ export const Navbar = () => {
                   <a
                     aria-current={isActive ? "location" : undefined}
                     className={clsx(
-                      "block rounded-xl px-3 py-2 text-lg transition-colors",
+                      "relative block rounded-xl px-3 py-2 text-lg transition-colors",
                       isActive
                         ? "bg-white/[0.08] font-medium text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-white/70"
                         : "text-zinc-300/85 hover:bg-white/[0.05] hover:text-white",
                     )}
                     href={item.href}
-                    onClick={(e) => {
-                      handleSmoothScroll(e, item.href);
+                    onClick={(event) => {
+                      handleSmoothScroll(event, item.href);
                       setIsMenuOpen(false);
                     }}
                   >

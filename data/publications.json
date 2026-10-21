@@ -1,29 +1,29 @@
 [
-    {
-        "title": "Physically-based fluid-particle systems using DirectCompute for use in real-time games",
-        "date": "2014-11-03",
-        "institution": "Blekinge Institute of Technology",
-        "description": "Bachelor's thesis",
-        "body": {
-            "paragraphs": [
-                "This thesis ultimately tries to provide the reader with a well-performing and scalable fluid-particle system simulated in real-time using a great number of particles. The fluid-particle system implements two different fluid physics models for diversity and comparison purposes. The fluid-particle system will then be measured for each fluid physics model and provide results to educate the reader on how well the performance of a fluid-particle system might scale with the increase of active particles in the simulation. Finally, a performance comparison of the particle scalability is made by completely excluding the fluid physics calculations and simulate the particles using only gravity as an affecting force to be able to demonstrate how taxing the fluid physics calculations are on the GPU.",
-                "The fluid-particle system has been run using different simulation scenarios, where each scenario is defined by the amount of particles being active and the dimensions of our fluid-particle simulation space. The performance results from each scenario has then been saved and put into a collection of results for a given simulation space.",
-                "The results presented demonstrate how well the fluid-particle system actually scales being run on a modern GPU. The system reached over a million particles while still running at an acceptable frame rate, for both of the fluid physics models. The results also shows that the performance is greatly reduced by simulating the particle system as a fluid-particle one, instead of only running it with gravity applied.",
-                "With the results presented, we are able to conclude that fluid-particle systems scale well with the number of particles being active, while being run on a modern GPU. There are many optimizations to be done to be able to achieve a well-performing fluid-particle system, when developing fluid-particle system you should be wary of the many performance pitfalls that comes with it."
-            ]
-        }
-    },
-    {
-        "title": "Debugging Tool for a Distributed Streaming Application",
-        "date": "2017-05-04",
-        "institution": "Uppsala University",
-        "description": "Master's thesis",
-        "body": {
-            "paragraphs": [
-                "Debugging is a fundamental tool for software developers, it is therefore included in the majority of modern integrated development environments available today. When the capabilities of such debuggers are to be implemented in a debugging tool for a clustered, real-time stream processing system, the task becomes very complex.",
-                "Knowledge on how to build debuggers for such systems is missing, and there is a need for these types of tools in the emerging real-time data stream processing industry. This thesis explores ways to implement and find usages of a debugging tool in a clustered, real-time processing environment. Previous research was made and two papers were found as a good basis for this thesis, but the papers did not target real-time stream processing systems, so the knowledge gap still persists. It was found that these types of systems have extended requirements in addition to the functionality debuggers of today that has to be fulfilled. The first requirement found was that shared states has to be represented in some way in the tool, and multiple solutions were proposed. The second problem found was that the real-time data stream had to be integrated into the tool in one or more ways. This thesis has brought up two ways to solve it; stream generation and stream sampling. The last problem brought up came from the need for users to be able to debug fatal bugs that has crashed the system. Three solutions were proposed, and the concluded Monte Carlo solution builds upon the previous two problems.",
-                "The thesis presents a special debugging protocol and a blueprint of a debugging tool, with implementation details included, for others to take inspiration from. Thus the thesis fills in the missing knowledge gaps and successfully achieves the goal of answering the question of how to implement a debugging tool for a clustered, real-time data stream processing system."
-            ]
-        }
+  {
+    "title": "Physically-based fluid-particle systems using DirectCompute for use in real-time games",
+    "date": "2014-11-03",
+    "institution": "Blekinge Institute of Technology",
+    "description": "Bachelor's thesis",
+    "body": {
+      "paragraphs": [
+        "This thesis ultimately tries to provide the reader with a well-performing and scalable fluid-particle system simulated in real-time using a great number of particles. The fluid-particle system implements two different fluid physics models for diversity and comparison purposes. The fluid-particle system will then be measured for each fluid physics model and provide results to educate the reader on how well the performance of a fluid-particle system might scale with the increase of active particles in the simulation. Finally, a performance comparison of the particle scalability is made by completely excluding the fluid physics calculations and simulate the particles using only gravity as an affecting force to be able to demonstrate how taxing the fluid physics calculations are on the GPU.",
+        "The fluid-particle system has been run using different simulation scenarios, where each scenario is defined by the amount of particles being active and the dimensions of our fluid-particle simulation space. The performance results from each scenario has then been saved and put into a collection of results for a given simulation space.",
+        "The results presented demonstrate how well the fluid-particle system actually scales being run on a modern GPU. The system reached over a million particles while still running at an acceptable frame rate, for both of the fluid physics models. The results also shows that the performance is greatly reduced by simulating the particle system as a fluid-particle one, instead of only running it with gravity applied.",
+        "With the results presented, we are able to conclude that fluid-particle systems scale well with the number of particles being active, while being run on a modern GPU. There are many optimizations to be done to be able to achieve a well-performing fluid-particle system, when developing fluid-particle system you should be wary of the many performance pitfalls that comes with it."
+      ]
     }
+  },
+  {
+    "title": "Debugging Tool for a Distributed Streaming Application",
+    "date": "2017-05-04",
+    "institution": "Uppsala University",
+    "description": "Master's thesis",
+    "body": {
+      "paragraphs": [
+        "Debugging is a fundamental tool for software developers, it is therefore included in the majority of modern integrated development environments available today. When the capabilities of such debuggers are to be implemented in a debugging tool for a clustered, real-time stream processing system, the task becomes very complex.",
+        "Knowledge on how to build debuggers for such systems is missing, and there is a need for these types of tools in the emerging real-time data stream processing industry. This thesis explores ways to implement and find usages of a debugging tool in a clustered, real-time processing environment. Previous research was made and two papers were found as a good basis for this thesis, but the papers did not target real-time stream processing systems, so the knowledge gap still persists. It was found that these types of systems have extended requirements in addition to the functionality debuggers of today that has to be fulfilled. The first requirement found was that shared states has to be represented in some way in the tool, and multiple solutions were proposed. The second problem found was that the real-time data stream had to be integrated into the tool in one or more ways. This thesis has brought up two ways to solve it; stream generation and stream sampling. The last problem brought up came from the need for users to be able to debug fatal bugs that has crashed the system. Three solutions were proposed, and the concluded Monte Carlo solution builds upon the previous two problems.",
+        "The thesis presents a special debugging protocol and a blueprint of a debugging tool, with implementation details included, for others to take inspiration from. Thus the thesis fills in the missing knowledge gaps and successfully achieves the goal of answering the question of how to implement a debugging tool for a clustered, real-time data stream processing system."
+      ]
+    }
+  }
 ]

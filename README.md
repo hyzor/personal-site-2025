@@ -1,102 +1,95 @@
-# Jesper Falkenby - Personal Portfolio
+# Jesper Falkenby — Personal Portfolio
 
-A modern, responsive personal portfolio website built with Next.js and optimized for performance and SEO.
+Personal portfolio for Jesper Falkenby, deployed at [falkenby.com](https://falkenby.com). The site is a single-page, dark-themed portfolio with an embedded résumé, publications, and contact links.
 
 ## Tech Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org/docs/getting-started) (App Router)
-- **UI Components**: [HeroUI v2](https://heroui.com/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with [Tailwind Variants](https://tailwind-variants.org)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Theme**: [next-themes](https://github.com/pacocoursey/next-themes)
-- **Package Manager**: [Bun](https://bun.sh/)
-- **Deployment**: [Vercel](https://vercel.com/) with [Cloudflare](https://www.cloudflare.com/) DNS
+- **Framework:** [Next.js 16](https://nextjs.org/docs) App Router with Turbopack
+- **Language:** [TypeScript](https://www.typescriptlang.org/) (strict)
+- **UI:** [React 19](https://react.dev/) + [HeroUI 2](https://heroui.com/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/) with [Tailwind Variants](https://tailwind-variants.org)
+- **PDF viewer:** [react-pdf](https://github.com/wojtekmaj/react-pdf) + [PDF.js](https://mozilla.github.io/pdf.js/)
+- **Theme:** [next-themes](https://github.com/pacocoursey/next-themes), pinned to dark mode
+- **Package manager:** [Bun](https://bun.sh/)
+- **Hosting:** [Vercel](https://vercel.com/) with [Cloudflare](https://www.cloudflare.com/) DNS
+
+HeroUI lists `framer-motion` as a peer dependency; it is declared explicitly because HeroUI's animations import it.
 
 ## Features
 
-- 🎨 Modern, animated UI with dark/light theme support
-- 📱 Fully responsive design
-- 🔍 SEO optimized with structured data and meta tags
-- 📄 Interactive resume viewer with PDF.js
-- 📚 Publications section
-- ⚡ Optimized performance with Next.js 16
-- 🌐 Semantic HTML5 and accessibility considerations
+- Single-page sections for home, résumé, publications, about, and contact
+- Lazy-loaded PDF résumé with a text/annotation layer and a direct-PDF fallback
+- Animated starfield and nebula background; the canvas pauses only while the tab is hidden
+- SEO metadata, JSON-LD `Person` data, sitemap, and robots rules
+- Accessibility basics: skip link, landmark structure, visible focus styles
+- Security headers configured in `next.config.js`
 
-## Development
+## Requirements
 
-### Prerequisites
+- [Node.js](https://nodejs.org/) **20.9 or newer**
+- [Bun](https://bun.sh/) **1.4 or newer**
 
-- [Bun](https://bun.sh/) installed on your machine
-
-### Getting Started
-
-1. Clone the repository:
+## Getting Started
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/hyzor/personal-site-2025.git
 cd personal-site-2025
-```
-
-2. Install dependencies:
-
-```bash
 bun install
-```
-
-3. Run the development server:
-
-```bash
 bun run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Available Scripts
+`prebuild` copies the PDF.js worker from `node_modules/pdfjs-dist` into `public/`. It runs automatically before both `dev` and `build`.
 
-- `bun run dev` - Start development server with Turbopack
-- `bun run build` - Build for production
-- `bun run start` - Start production server
-- `bun run lint` - Run ESLint with auto-fix
-- `bunx tsc --noEmit` - Type checking without compilation
+## Available Scripts
 
-### Project Structure
+| Command                | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| `bun run dev`          | Start the development server                        |
+| `bun run build`        | Create an optimized production build                |
+| `bun run start`        | Serve the production build                          |
+| `bun run lint`         | Run ESLint without changing files                   |
+| `bun run lint:fix`     | Run ESLint and apply safe fixes                     |
+| `bun run format`       | Format the repository with Prettier                 |
+| `bun run format:check` | Verify formatting without writing files             |
+| `bun run typecheck`    | Generate Next.js route types and run `tsc --noEmit` |
+| `bun run check`        | Run lint, formatting, and type checks               |
+| `bun run prebuild`     | Copy the PDF.js worker into `public/` (internal)    |
+
+## Project Structure
 
 ```
-├── app/                 # Next.js App Router pages and layouts
-├── components/          # Reusable React components
-├── config/             # Site configuration and constants
-├── data/               # Static content (JSON)
-├── lib/                # Utility functions
-├── public/             # Static assets
-├── scripts/            # Build scripts and utilities
-├── styles/             # Global CSS and Tailwind config
-└── types/              # TypeScript type definitions
+├── app/          # App Router pages, layout, metadata routes
+├── components/   # Reusable UI and client widgets
+├── config/       # Site metadata and font configuration
+├── data/         # Static content (about + publications)
+├── public/       # Static assets (profile image, résumé, favicon)
+├── scripts/      # Build-time helper scripts
+└── styles/       # Tailwind entry point and global CSS
 ```
 
-## AI Development Disclaimer
+## Editing Content
 
-This website has been largely written by the model Big Pickle on OpenCode Zen. The AI assistance was used for:
+- Site metadata and links: [`config/site.ts`](config/site.ts)
+- About text: [`data/about.json`](data/about.json)
+- Publications: [`data/publications.json`](data/publications.json)
+- Résumé PDF: `public/resume.pdf`
+- Profile image: `public/profile.webp` (1200 × 1195)
 
-- Initial project setup and architecture
-- Component development and styling
-- SEO optimization implementation
-- Code organization and best practices
-- TypeScript type definitions
+The site is intentionally dark-only. `next-themes` is pinned to the `dark` class and system switching is disabled.
 
-**2026-02-04 Update:** Critical accessibility and performance improvements were implemented using Kimi K2.5.
+## Roadmap
 
-Human oversight was maintained throughout the development process, with manual review, testing, and refinement of all generated code to ensure quality, functionality, and adherence to project requirements.
+Known technical debt and planned work are tracked in [`ROADMAP.md`](ROADMAP.md).
 
 ## Deployment
 
-The site is deployed on Vercel with Cloudflare handling DNS. The deployment process includes:
+Vercel builds the site automatically on push. The build command is `bun run build`; the project requires Node.js 20.9 or newer. Cloudflare handles DNS, and the security headers in `next.config.js` are applied by Next.js at runtime.
 
-- Automatic builds on git push
-- Optimized production builds
-- Global CDN distribution
-- SSL certificate management
-- Custom domain configuration
+## AI Assistance
+
+Large parts of the site were originally generated with AI assistance (Big Pickle on OpenCode Zen, and later Kimi K2.5 for accessibility and performance work). All generated code was reviewed, tested, and refined manually.
 
 ## License
 

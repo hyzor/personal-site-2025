@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import clsx from "clsx";
 
 import { title } from "@/components/primitives";
@@ -7,7 +8,7 @@ interface SectionProps {
   id: string;
   title: string;
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
-  children?: React.ReactNode;
+  children?: ReactNode;
   className?: string;
   showPanel?: boolean;
   showScrollIndicator?: boolean;
@@ -26,7 +27,11 @@ export function Section({
 
   return (
     <section
-      className={`flex flex-col items-center justify-center gap-4 py-20 min-h-screen relative ${className || ""}`}
+      aria-labelledby={`${id}-heading`}
+      className={clsx(
+        "flex flex-col items-center justify-center gap-4 py-20 min-h-screen relative",
+        className,
+      )}
       id={id}
     >
       <div
@@ -37,7 +42,9 @@ export function Section({
             : "[text-shadow:0_2px_16px_rgba(0,0,0,0.85)]",
         )}
       >
-        <HeadingTag className={title()}>{sectionTitle}</HeadingTag>
+        <HeadingTag className={title()} id={`${id}-heading`}>
+          {sectionTitle}
+        </HeadingTag>
         {children}
       </div>
       {showScrollIndicator && <ScrollIndicator />}

@@ -191,11 +191,16 @@ export const Navbar = () => {
           toggle: "text-zinc-200",
         }}
       >
+        {/* Equal empty grow items on both sides keep the cluster in the true center. */}
         <NavbarContent
-          className="hidden basis-1/5 overflow-hidden lg:flex lg:basis-full"
+          aria-hidden="true"
+          as="div"
+          className="hidden lg:flex"
           justify="start"
-        >
-          <ul className="flex h-full flex-nowrap items-stretch justify-start overflow-x-hidden">
+        />
+
+        <NavbarContent as="div" className="hidden lg:flex" justify="center">
+          <ul className="flex h-full flex-nowrap items-stretch justify-center overflow-x-hidden">
             {siteConfig.navItems.map((item) => {
               const targetId = item.href.replace("#", "");
               const isActive = activeSection === targetId;
@@ -220,13 +225,13 @@ export const Navbar = () => {
               );
             })}
           </ul>
-        </NavbarContent>
 
-        <NavbarContent
-          className="hidden basis-1/5 overflow-hidden lg:flex lg:basis-full"
-          justify="end"
-        >
-          <NavbarItem className="flex flex-shrink-0 gap-2 sm:gap-4">
+          <span
+            aria-hidden="true"
+            className="h-5 w-px flex-shrink-0 bg-white/15"
+          />
+
+          <div className="flex flex-shrink-0 items-center gap-3">
             <Link
               isExternal
               aria-label="Github"
@@ -250,8 +255,15 @@ export const Navbar = () => {
             >
               <MailIcon className="text-zinc-300/75 transition-colors group-hover:text-white" />
             </Link>
-          </NavbarItem>
+          </div>
         </NavbarContent>
+
+        <NavbarContent
+          aria-hidden="true"
+          as="div"
+          className="hidden lg:flex"
+          justify="end"
+        />
 
         <NavbarContent
           className="flex basis-1 pl-2 pr-2 lg:hidden"

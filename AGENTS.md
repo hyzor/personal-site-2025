@@ -34,6 +34,9 @@
 
 - No automated test runner ships yet; pair linting, formatting, and type checks with manual UI verification covering new states and breakpoints.
 - When adding tests, colocate them beside the implementation (`*.test.tsx`) and document the command required to run the suite in this guide.
+- Launch browsers for UI checks with extensions disabled and a throwaway home, because the sandbox mounts `~` read-only and KDE's system-wide Plasma Integration extension otherwise spams `~/.config/plasma-browser-integration-hostrc not writable` on every launch:
+  `HOME=$PWD/.tmp-browser XDG_CONFIG_HOME=$PWD/.tmp-browser/.config chromium --headless=new --no-sandbox --disable-gpu --disable-extensions --user-data-dir=$PWD/.tmp-browser/profile --screenshot=$PWD/.tmp-browser/shot.png --window-size=1440,900 <url>`
+- Keep browser profiles, screenshots, and other run artifacts under `.tmp-*` so they stay gitignored, and delete them when done.
 
 ## Commit & Pull Request Guidelines
 
